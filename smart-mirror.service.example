@@ -1,0 +1,24 @@
+[Unit]
+Description=Smart-mirror startup
+After=network.target
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/smart-mirror-tui
+Environment=LANG=sv_SE.UTF-8
+Environment=LC_ALL=sv_SE.UTF-8
+PAMName=login
+Environment=PATH=/home/pi/smart-mirror-tui/.venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=cage -s -- /home/pi/smart-mirror-tui/start-mirror.sh
+Restart=always
+RestartSec=5
+StandardInput=tty-force
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+
+[Install]
+WantedBy=multi-user.target
