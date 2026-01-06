@@ -24,31 +24,32 @@ class WeatherCard(Card):
     """
     
     # Weather condition code to icon mapping (WMO Weather codes)
+    # Using Nerd Font Weather Icons (single-width glyphs)
     WEATHER_ICONS = {
-        0: "☀️",   # Clear sky
-        1: "🌤️",   # Mainly clear
-        2: "⛅",   # Partly cloudy
-        3: "☁️",   # Overcast
-        45: "🌫️",  # Foggy
-        48: "🌫️",  # Depositing rime fog
-        51: "🌦️",  # Drizzle light
-        53: "🌦️",  # Drizzle moderate
-        55: "🌧️",  # Drizzle dense
-        61: "🌧️",  # Rain slight
-        63: "🌧️",  # Rain moderate
-        65: "🌧️",  # Rain heavy
-        71: "🌨️",  # Snow slight
-        73: "🌨️",  # Snow moderate
-        75: "🌨️",  # Snow heavy
-        77: "❄️",   # Snow grains
-        80: "🌦️",  # Rain showers slight
-        81: "🌧️",  # Rain showers moderate
-        82: "⛈️",   # Rain showers violent
-        85: "🌨️",  # Snow showers slight
-        86: "🌨️",  # Snow showers heavy
-        95: "⛈️",   # Thunderstorm
-        96: "⛈️",   # Thunderstorm with slight hail
-        99: "⛈️",   # Thunderstorm with heavy hail
+        0: "",   # Clear sky (nf-weather-day_sunny)
+        1: "",   # Mainly clear (nf-weather-day_sunny)
+        2: "",   # Partly cloudy (nf-weather-day_cloudy)
+        3: "",   # Overcast (nf-weather-cloudy)
+        45: "",  # Foggy (nf-weather-fog)
+        48: "",  # Depositing rime fog (nf-weather-fog)
+        51: "",  # Drizzle light (nf-weather-sprinkle)
+        53: "",  # Drizzle moderate (nf-weather-sprinkle)
+        55: "",  # Drizzle dense (nf-weather-rain)
+        61: "",  # Rain slight (nf-weather-rain)
+        63: "",  # Rain moderate (nf-weather-rain)
+        65: "",  # Rain heavy (nf-weather-rain)
+        71: "",  # Snow slight (nf-weather-snow)
+        73: "",  # Snow moderate (nf-weather-snow)
+        75: "",  # Snow heavy (nf-weather-snow)
+        77: "",  # Snow grains (nf-weather-snow)
+        80: "",  # Rain showers slight (nf-weather-showers)
+        81: "",  # Rain showers moderate (nf-weather-showers)
+        82: "",   # Rain showers violent (nf-weather-rain)
+        85: "",  # Snow showers slight (nf-weather-snow)
+        86: "",  # Snow showers heavy (nf-weather-snow)
+        95: "",   # Thunderstorm (nf-weather-thunderstorm)
+        96: "",   # Thunderstorm with slight hail (nf-weather-thunderstorm)
+        99: "",   # Thunderstorm with heavy hail (nf-weather-thunderstorm)
     }
     
     def __init__(
@@ -93,9 +94,9 @@ class WeatherCard(Card):
             code: WMO weather code
             
         Returns:
-            Weather icon emoji
+            Weather icon glyph
         """
-        return self.WEATHER_ICONS.get(code, "🌡️")
+        return self.WEATHER_ICONS.get(code, "")  # nf-weather-thermometer
     
     def _format_weather(self) -> str:
         """Format weather data for display."""
@@ -117,8 +118,8 @@ class WeatherCard(Card):
         icon = self._get_weather_icon(code)
         lines.append(f"[bold]{icon}  Now: {temp}°C[/bold]")
         lines.append("")
-        lines.append(f"💨 Wind: {wind} km/h")
-        lines.append(f"💧 Humidity: {humidity}%")
+        lines.append(f" Wind: {wind} km/h")  # nf-weather-strong_wind
+        lines.append(f" Humidity: {humidity}%")  # nf-weather-humidity
         
         # 3-day forecast
         daily = self._weather_data.get("daily", {})
@@ -130,7 +131,7 @@ class WeatherCard(Card):
             
             if len(temps_max) >= 3 and len(times) >= 3:
                 lines.append("")
-                lines.append("�� Forecast:")
+                lines.append(" Forecast:")  # nf-weather-day_cloudy
                 for i in range(1, min(4, len(temps_max))):  # Next 3 days
                     try:
                         from datetime import datetime
