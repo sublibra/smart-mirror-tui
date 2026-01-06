@@ -274,13 +274,40 @@ app Widget wrapper** → `smart_mirror/core/widgets.py`
 ### WeatherCard (`smart_mirror/plugins/weather.py`)
 - **Widget**: `Static` with Rich markup
 - **Update**: Every 5 minutes
-- **Features**: Current weather with emoji icons, 3-day forecast
+- **Features**: Current weather with emoji icons, and 3-day forecast
 - **API**: Open-Meteo (free, no auth required)
 - **CSS**: Left-aligned with bold "Now" section
-```
+- **Icons**: Uses Nerd Font Weather Icons for proper terminal rendering
+
+## Raspberry Pi Deployment
+
+The application is designed to run on Raspberry Pi with:
+- **Compositor**: cage (Wayland compositor for kiosk mode)
+- **Terminal**: foot (modern terminal with excellent Unicode/Nerd Font support)
+- **Font**: JetBrains Mono Nerd Font for weather icons and glyphs, Noto Color Emoji for emojis
+- **Autostart**: systemd service for boot-time startup
+
+### Terminal Requirements
+- Use cage + foot for proper Nerd Font glyph rendering
+- Avoid fbterm (limited wide glyph and truecolor support)
+- Ensure `TERM=foot` environment variable is set
+- Configure foot.ini with Nerd Font and proper fallbacks
+
+### Key Files
+- `install-service.sh` - Automated installation script
+- `smart-mirror.service.example` - systemd service template
+- `start-mirror.sh` - Startup script with screen rotation
+- `foot.ini` - Terminal configuration with Nerd Font settings
 
 The greeter card automatically updates based on:
-- Time of day (Good morcompose():
+- Time of day (Good morning, afternoon, evening)
+- User name (via face recognition or manual setting)
+
+## Example Test Pattern
+
+```python
+@pytest.mark.asyncio
+async def test_my_card_compose():
     card = MyCard()
     widgets = list(card.compose())
     assert len(widgets) > 0

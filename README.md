@@ -259,18 +259,180 @@ uv run ruff check smart_mirror tests
 uv run mypy smart_mirror
 ```
 
+## Raspberry Pi Installation
+
+Run the smart mirror on a Raspberry Pi with automatic startup on boot using Wayland compositor (cage) and foot terminal.
+
+### Prerequisites
+- Raspberry Pi (tested on Pi 0 2W)
+- Fresh Raspberry Pi OS Lite installation
+- Internet connection
+
+### Quick Installation
+
+1. Clone the repository:
+```bash
+cd ~
+git clone <repository-url> smart-mirror-tui
+cd smart-mirror-tui
+```
+
+2. Install Python dependencies:
+```bash
+uv sync
+```
+
+3. Run the automated installation script:
+```bash
+chmod +x install-service.sh
+./install-service.sh
+```
+
+This script will:
+- Install cage (Wayland compositor) and foot (terminal emulator)
+- Install JetBrains Mono Nerd Font
+- Configure foot terminal with proper font settings
+- Set up video/input permissions for your user
+- Hide the mouse cursor
+- Install and enable the systemd service
+
+4. Configure the service file:
+```bash
+sudo nano /etc/systemd/system/smart-mirror.service
+```
+
+Update paths if your username is not `pi`:
+- Change `User=pi` to your username
+- Update all `/home/pi/` paths to your home directory
+
+5. Reboot:
+```bash
+sudo reboot
+```
+
+The smart mirror will start automatically on boot.
+
+### Manual Installation
+
+If you prefer manual setup:
+
+1. Install dependencies:
+```bash
+sudo apt install cage foot fontconfig wlr-randr fonts-noto-color-emoji -y
+```
+
+2. Install Nerd Font:
+```bash
+mkdir -p ~/.local/share/fonts
+cd ~/.local/share/fonts
+wget https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz
+tar -xvf JetBrainsMono.tar.xz
+fc-cache -fv
+```
+
+3. Configure foot terminal:
+```bash
+mkdir -p ~/.config/foot
+cp foot.ini ~/.config/foot/foot.ini
+```
+
+4. Add user to required groups:
+```bash
+sudo usermod -aG tty,video,input,render $USER
+```
+
+5. Hide mouse cursor:
+```bash
+mkdir -p ~/.icons/default/cursors
+touch ~/.icons/default/cursors/left_ptr
+echo -e "[Icon Theme]\nName=default\nInherits=default" > ~/.icons/default/index.theme
+```
+
+6. Install systemd service:
+```bash
+sudo cp smart-mirror.service.example /etc/systemd/system/smart-mirror.service
+sudo systemctl daemon-reload
+sudo systemctl enable smart-mirror.service
+```
+
+### Configuration
+
+#### Foot Terminal (foot.ini)
+The included `foot.ini` configures:
+- Nerd Font with fallback to emoji fonts
+- Black background
+- 256-color support
+- Cursor and mouse settings
+
+#### Screen Rotation
+The `start-mirror.sh` script includes rotation for portrait mode:
+```bash
+wlr-randr --output HDMI-A-1 --transform 90
+```
+
+Modify the rotation value:
+- `90` - 90° clockwise
+- `180` - 180° rotation
+- `270` - 270° clockwise (90° counter-clockwise)
+- `normal` - No rotation
+
+Change the output name (`HDMI-A-1`) if using different ports. Check available outputs:
+```bash
+wlr-randr
+```
+
+### Service Management
+
+```bash
+# Check status
+sudo systemctl status smart-mirror.service
+
+# View logs
+sudo journalctl -u smart-mirror.service -f
+
+# Restart
+sudo systemctl restart smart-mirror.service
+
+# Stop
+sudo systemctl stop smart-mirror.service
+
+# Disable autostart
+sudo systemctl disable smart-mirror.service
+```
+
+### Troubleshooting
+
+**Icons not displaying:**
+- Verify Nerd Font is installed: `fc-list | grep "JetBrains"`
+- Check foot.ini font configuration
+- Ensure `TERM=foot` in environment
+
+**Screen not rotating:**
+- Check output name with `wlr-randr`
+- Verify wlr-randr is installed
+- Check logs for errors
+
+**Service fails to start:**
+- Check user permissions: `groups`
+- Verify paths in service file
+- Check logs: `journalctl -u smart-mirror.service -n 50`
+
+**Terminal emulator vs framebuffer:**
+- This setup uses cage (Wayland) + foot (terminal) for proper Unicode/Nerd Font support
+- Avoid fbterm as it has limited support for wide glyphs and truecolor
+
 ## Future Enhancements
 
 - [x] Advanced layout system (using Textual Grid)
 - [x] Widget-based architecture with Textual
 - [x] CSS styling for cards
+- [x] Raspberry Pi installation with cage+foot
 - [ ] More example cards (stocks, news, calendar, etc.)
 - [ ] Configuration file support (YAML/TOML)
 - [ ] Card animation support
 - [ ] REST API for remote control
 - [ ] Database for persistence
 - [ ] Docker support
-- [ ] Raspberry Pi optimization
 
 ## License
 
