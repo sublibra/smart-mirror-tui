@@ -259,6 +259,11 @@ uv run ruff check smart_mirror tests
 uv run mypy smart_mirror
 ```
 
+## Run textual dev mode
+```bash
+uv run textual run --dev smart_mirror/__main__.py
+```
+
 ## Raspberry Pi Installation
 
 Run the smart mirror on a Raspberry Pi with automatic startup on boot using Wayland compositor (cage) and foot terminal.
