@@ -14,7 +14,7 @@ class QlikMenuCard(Card):
     """ Get the Qlik Menu for the coming week """
     
     DEFAULT_CSS = """
-    #greeter Static {
+    #qlik_menu Static {
         text-style: bold;
         color: orange;
         text-align: center;
@@ -55,11 +55,11 @@ class QlikMenuCard(Card):
         try:
             menu_data = await self._get_menu()
             if not menu_data:
-                return "[bold red]❌ No menu data available[/bold red]"
+                return "[bold red] No menu data available[/bold red]"
             return self._format_menu(menu_data)
         except Exception as e:
             self.logger.error(f"Error fetching menu: {e}")
-            return "[bold red]❌ Failed to load menu[/bold red]"
+            return "[bold red] Failed to load menu[/bold red]"
     
     def _format_menu(self, menu_data: list) -> str:
         """Format menu data with day names and bullet points.

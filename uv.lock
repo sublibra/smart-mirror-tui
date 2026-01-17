@@ -1452,7 +1452,6 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "rich" },
     { name = "textual" },
-    { name = "textual-dev" },
 ]
 
 [package.optional-dependencies]
@@ -1463,6 +1462,7 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "textual-dev" },
 ]
 
 [package.metadata]
@@ -1478,7 +1478,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "textual", specifier = ">=0.40.0" },
-    { name = "textual-dev", specifier = ">=1.8.0" },
+    { name = "textual-dev", marker = "extra == 'dev'", specifier = ">=1.8.0" },
 ]
 provides-extras = ["dev"]
 
