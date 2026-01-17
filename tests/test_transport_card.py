@@ -51,10 +51,11 @@ async def test_transport_card_update_with_delay(monkeypatch):
     monkeypatch.setattr(card, "_fetch_departures", AsyncMock(return_value=payload))
 
     await card.update()
+    renderable_str = str(card._last_render)
 
-    assert "Central" in card._last_render
-    assert "in 8m" in card._last_render
-    assert "[WARN +3m]" in card._last_render
+    assert "Central" in renderable_str
+    assert "in 8m" in renderable_str
+    assert "⚠️  +3m" in renderable_str
 
 
 @pytest.mark.asyncio
