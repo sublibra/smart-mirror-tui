@@ -43,6 +43,12 @@ This is a Python-based smart mirror application with a TUI (Terminal User Interf
 - Use `mypy` for type checking
 - Follow async/await patterns throughout
 
+### Logging
+- Cards should log through Textual's logging interface, not the standard `logging` module.
+- `CardWidget` injects `card.set_logger(self.log)` during `on_mount`; call `self.log(...)` inside cards.
+- Keep messages concise; include key context via kwargs (e.g., `self.log("Fetching", url=url)`).
+- Avoid bare `print`; the fallback in `Card.log` is only for early bootstrap.
+
 ### Async Patterns
 ```python
 # Always use async methods
@@ -246,6 +252,8 @@ uv run pytest tests/test_app.py -s
 # Run with pdb debugging
 uv run pytest tests/test_app.py --pdb
 ```
+
+Remember that textual will capture stdout/stderr.
 
 ## PIR Sensor Integration
 

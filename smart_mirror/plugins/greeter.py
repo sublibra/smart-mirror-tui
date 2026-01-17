@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
+
 from textual.app import ComposeResult
 from textual.widgets import Static
 
@@ -10,7 +11,7 @@ from smart_mirror.plugins.base import Card, CardConfig, CardPosition
 
 class GreeterCard(Card):
     """Greeter card that displays personalized greetings based on time of day."""
-    
+
     DEFAULT_CSS = """
     #greeter Static {
         text-style: bold;
@@ -19,10 +20,10 @@ class GreeterCard(Card):
         content-align: center middle;
     }
     """
-    
+
     def __init__(self, config: Optional[CardConfig] = None, user_name: str = "there"):
         """Initialize the clock card.
-        
+
         Args:
             config: Optional CardConfig. If not provided, uses defaults.
             user_name: Name of the user to greet
@@ -40,20 +41,20 @@ class GreeterCard(Card):
         super().__init__(config)
         self._user_name = user_name
         self._greeting_widget: Optional[Static] = None
-    
+
     def compose(self) -> ComposeResult:
         """Compose the greeting display."""
         self._greeting_widget = Static(self._get_greeting_text())
         yield self._greeting_widget
-    
+
     def _get_greeting_text(self) -> str:
         """Get the current greeting text."""
         greeting = self._get_greeting()
         return f"{greeting}, {self._user_name}!"
-    
+
     def _get_greeting(self) -> str:
         """Get time-appropriate greeting.
-        
+
         Returns:
             Greeting string based on current time
         """
@@ -66,15 +67,15 @@ class GreeterCard(Card):
             return "Good evening"
         else:
             return "Good night"
-    
+
     async def update(self) -> None:
         """Update the greeting text."""
         if self._greeting_widget:
             self._greeting_widget.update(self._get_greeting_text())
-    
+
     def set_user_name(self, name: str) -> None:
         """Update the user name for greeting.
-        
+
         Args:
             name: New user name
         """

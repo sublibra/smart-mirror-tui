@@ -1,13 +1,13 @@
 """Tests for plugin initialization."""
 
-import pytest
 from smart_mirror import (
     Card,
     CardConfig,
     CardPosition,
     ClockCard,
-    WeatherCard,
     GreeterCard,
+    TransportCard,
+    WeatherCard,
 )
 
 
@@ -19,6 +19,7 @@ def test_imports():
     assert ClockCard is not None
     assert WeatherCard is not None
     assert GreeterCard is not None
+    assert TransportCard is not None
 
 
 def test_card_position_values():
@@ -34,9 +35,9 @@ def test_card_position_values():
         CardPosition.BOTTOM_CENTER,
         CardPosition.BOTTOM_RIGHT,
     ]
-    
+
     assert len(positions) == 9
-    
+
     # All should be unique
     values = [p.value for p in positions]
     assert len(values) == len(set(values))
