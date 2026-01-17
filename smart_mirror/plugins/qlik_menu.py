@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Optional
 
 import httpx
+import requests
+from bs4 import BeautifulSoup
 from textual.app import ComposeResult
 from textual.widgets import Static
 
@@ -21,6 +23,16 @@ class QlikMenuCard(Card):
         content-align: center middle;
     }
     """
+    # Swedish day name to weekday number mapping (0=Monday, 6=Sunday)
+    DAY_NAMES = {
+        "måndag": 0,
+        "tisdag": 1,
+        "onsdag": 2,
+        "torsdag": 3,
+        "fredag": 4,
+        "lördag": 5,
+        "söndag": 6,
+    }
 
     def __init__(self, config: Optional[CardConfig] = None, *, processing_server_location: str):
         """Initialize the Menu card.
@@ -72,17 +84,6 @@ class QlikMenuCard(Card):
         Returns:
             Formatted menu string with Rich markup
         """
-        # Swedish day name to weekday number mapping (0=Monday, 6=Sunday)
-        day_names = {
-            "måndag": 0,
-            "tisdag": 1,
-            "onsdag": 2,
-            "torsdag": 3,
-            "fredag": 4,
-            "lördag": 5,
-            "söndag": 6,
-        }
-
         # Get current weekday (0=Monday, 6=Sunday)
         today = datetime.now().weekday()
 
@@ -93,8 +94,8 @@ class QlikMenuCard(Card):
         sorted_menu = []
         for item in menu_data:
             day_lower = item["day"].lower()
-            if day_lower in day_names:
-                day_num = day_names[day_lower]
+            if day_lower in self.DAY_NAMES:
+                day_num = self.DAY_NAMES[day_lower]
                 if day_num >= start_day:
                     sorted_menu.append((day_num, item))
 
@@ -134,12 +135,29 @@ class QlikMenuCard(Card):
             return []
 
         try:
-            url = f"http://{self.processing_server_location}/actions/get-qlik-menu"
-            self.log(f"Fetching Qlik Menu from {url}")
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(url)
-                response.raise_for_status()
-                return response.json()
+
+            url = "https://smartakok.se/vara-kok/qlik/"
+            response = requests.get(url, timeout=5)
+            menu = []
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            title = soup.find("h3", class_="elementor-heading-title elementor-size-default")
+            while title is not None:
+                if title.text.strip().lower() in self.DAY_NAMES:
+                    dishes = []
+                    ul = title.find_next("ul", class_="elementor-price-list")
+                    if ul:
+                        for dish in ul.find_all("span", class_="elementor-price-list-title"):
+                            description = dish.find_next(
+                                "p", class_="elementor-price-list-description"
+                            )
+                            dishes.append(f"{description.text.strip()}")
+                    menu.append({"day": title.text.strip(), "dishes": dishes})
+                title = title.find_next(
+                    "h3", class_="elementor-heading-title elementor-size-default"
+                )
+            return menu
+
         except httpx.HTTPError as e:
             self.log(f"HTTP error fetching menu: {e}", level="error")
             return []
