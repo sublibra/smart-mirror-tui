@@ -25,7 +25,7 @@ class SmartMirrorApp(App):
         grid-size: 3 3;
         grid-gutter: 1 2;
         padding: 1 2;
-        background: $surface;
+        background: black;
     }
 
     CardWidget {
