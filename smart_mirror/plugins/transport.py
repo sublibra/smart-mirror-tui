@@ -34,9 +34,6 @@ class TransportCard(Card):
         padding: 1;
     }
 
-    #transport .warning {
-        color: orange;
-    }
     """
 
     def __init__(
@@ -203,7 +200,7 @@ class TransportCard(Card):
 
         minutes = int(round(delay_seconds / 60))
         sign = "+" if minutes >= 0 else "-"
-        return f"[WARN {sign}{abs(minutes)}m]"
+        return f"[red bold]⚠️  {sign}{abs(minutes)}m[/red bold]"
 
     def _mode_label(self, mode: str) -> str:
         """Return short label for transport mode."""
