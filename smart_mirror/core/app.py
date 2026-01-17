@@ -13,6 +13,7 @@ from smart_mirror.plugins.clock import ClockCard
 from smart_mirror.plugins.weather import WeatherCard
 from smart_mirror.plugins.greeter import GreeterCard
 from smart_mirror.core.widgets import CardWidget
+from smart_mirror.plugins.qlik_menu import QlikMenuCard
 
 
 class SmartMirrorApp(App):
@@ -91,6 +92,11 @@ class SmartMirrorApp(App):
         longitude = float(os.getenv("WEATHER_LONGITUDE", "13.4050"))
         weather = WeatherCard(latitude=latitude, longitude=longitude)
         self.register_card(weather)
+
+        # Initialize Qlik Menu card
+        processing_server_location = os.getenv("PROCESSING_SERVER_LOCATION", "")
+        qlik_menu = QlikMenuCard(processing_server_location=processing_server_location)
+        self.register_card(qlik_menu)
     
     def register_card(self, card: Card) -> None:
         """Register a card/plugin with the application.
