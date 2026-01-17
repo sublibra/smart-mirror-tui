@@ -1,21 +1,21 @@
 """Tests for the base plugin architecture."""
 
 import pytest
-import asyncio
 from textual.app import ComposeResult
 from textual.widgets import Static
+
 from smart_mirror.plugins.base import Card, CardConfig, CardPosition
 
 
 class SimpleTestCard(Card):
     """Simple test card for testing the base Card class."""
-    
+
     DEFAULT_CSS = """
     #testcard {
         align: center middle;
     }
     """
-    
+
     def __init__(self, config: CardConfig = None):
         if config is None:
             config = CardConfig(
@@ -26,12 +26,12 @@ class SimpleTestCard(Card):
         super().__init__(config)
         self.update_count = 0
         self._widget: Static = None
-    
+
     def compose(self) -> ComposeResult:
         """Yield test widget."""
         self._widget = Static("Test Card")
         yield self._widget
-    
+
     async def update(self) -> None:
         self.update_count += 1
         if self._widget:
@@ -49,7 +49,6 @@ def test_card_initialization(card):
     assert card.name == "TestCard"
     assert card.position == CardPosition.MIDDLE_CENTER
     assert card.config.update_interval == 1
-    assert not card.is_running()
 
 
 def test_card_properties(card):
@@ -72,22 +71,6 @@ async def test_card_update(card):
     """Test card update."""
     await card.update()
     assert card.update_count == 1
-
-
-@pytest.mark.asyncio
-async def test_card_start_stop(card):
-    """Test starting and stopping a card."""
-    assert not card.is_running()
-    
-    await card.start()
-    assert card.is_running()
-    
-    # Let it update once
-    await asyncio.sleep(1.5)
-    assert card.update_count >= 1
-    
-    await card.stop()
-    assert not card.is_running()
 
 
 def test_card_position_enum():

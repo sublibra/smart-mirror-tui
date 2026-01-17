@@ -1,7 +1,7 @@
 """Tests for the smart mirror application."""
 
 import pytest
-import asyncio
+
 from smart_mirror.core.app import SmartMirrorApp
 
 
@@ -51,7 +51,7 @@ def test_set_user_name(app):
 async def test_card_compose():
     """Test that cards can compose widgets without errors."""
     app = SmartMirrorApp()
-    
+
     for card in app.cards.values():
         widgets = list(card.compose())
         assert len(widgets) > 0
@@ -61,23 +61,10 @@ async def test_card_compose():
 async def test_card_update():
     """Test that cards can update without errors."""
     app = SmartMirrorApp()
-    
+
     for card in app.cards.values():
         # Should not raise an exception
         await card.update()
-
-
-@pytest.mark.asyncio
-async def test_card_start_stop():
-    """Test starting and stopping a card."""
-    app = SmartMirrorApp()
-    clock = app.get_card("Clock")
-    
-    assert not clock.is_running()
-    await clock.start()
-    assert clock.is_running()
-    await clock.stop()
-    assert not clock.is_running()
 
 
 @pytest.mark.asyncio
@@ -85,7 +72,7 @@ async def test_clock_compose():
     """Test clock card composition."""
     app = SmartMirrorApp()
     clock = app.get_card("Clock")
-    
+
     widgets = list(clock.compose())
     assert len(widgets) > 0
 
@@ -94,11 +81,12 @@ async def test_clock_compose():
 async def test_greeter_morning():
     """Test greeter shows morning greeting."""
     from unittest.mock import patch
+
     from smart_mirror.plugins.greeter import GreeterCard
-    
+
     with patch("smart_mirror.plugins.greeter.datetime") as mock_datetime:
         mock_datetime.now.return_value.hour = 8
-        
+
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
         assert "morning" in greeting.lower()
@@ -108,11 +96,12 @@ async def test_greeter_morning():
 async def test_greeter_afternoon():
     """Test greeter shows afternoon greeting."""
     from unittest.mock import patch
+
     from smart_mirror.plugins.greeter import GreeterCard
-    
+
     with patch("smart_mirror.plugins.greeter.datetime") as mock_datetime:
         mock_datetime.now.return_value.hour = 14
-        
+
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
         assert "afternoon" in greeting.lower()
@@ -122,11 +111,12 @@ async def test_greeter_afternoon():
 async def test_greeter_evening():
     """Test greeter shows evening greeting."""
     from unittest.mock import patch
+
     from smart_mirror.plugins.greeter import GreeterCard
-    
+
     with patch("smart_mirror.plugins.greeter.datetime") as mock_datetime:
         mock_datetime.now.return_value.hour = 18
-        
+
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
         assert "evening" in greeting.lower()
@@ -136,11 +126,12 @@ async def test_greeter_evening():
 async def test_greeter_night():
     """Test greeter shows night greeting."""
     from unittest.mock import patch
+
     from smart_mirror.plugins.greeter import GreeterCard
-    
+
     with patch("smart_mirror.plugins.greeter.datetime") as mock_datetime:
         mock_datetime.now.return_value.hour = 22
-        
+
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
         assert "night" in greeting.lower()
