@@ -1465,6 +1465,11 @@ dev = [
     { name = "textual-dev" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "textual-dev" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
@@ -1481,6 +1486,9 @@ requires-dist = [
     { name = "textual-dev", marker = "extra == 'dev'", specifier = ">=1.8.0" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "textual-dev", specifier = ">=1.8.0" }]
 
 [[package]]
 name = "textual"

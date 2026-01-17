@@ -22,12 +22,12 @@ class QlikMenuCard(Card):
     }
     """
     
-    def __init__(self, config: Optional[CardConfig] = None, processing_server_location: str = ""):
+    def __init__(self, config: Optional[CardConfig] = None, *, processing_server_location: str):
         """Initialize the Menu card.
         
         Args:
             config: Optional CardConfig. If not provided, uses defaults.
-            processing_server_location: Location of the processing server
+            processing_server_location: Location of the processing server (required)
         """
         if config is None:
             config = CardConfig(
@@ -122,6 +122,10 @@ class QlikMenuCard(Card):
         Returns:
             List of dicts with 'day' and 'dishes' keys, or empty list on error
         """
+        if not self.processing_server_location:
+            self.logger.error("processing_server_location is not configured")
+            return []
+        
         try:
             url = f"http://{self.processing_server_location}/actions/get-qlik-menu"
             self.logger.info(f"Fetching Qlik Menu from {url}")

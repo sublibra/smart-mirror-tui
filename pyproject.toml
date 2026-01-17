@@ -77,3 +77,8 @@ disallow_untyped_defs = false
 testpaths = ["tests"]
 addopts = "-v --cov=smart_mirror --cov-report=term-missing"
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "textual-dev>=1.8.0",
+]
