@@ -1,5 +1,6 @@
 """Main Smart Mirror TUI application."""
 
+import logging
 import os
 from typing import Dict, Optional
 
@@ -14,6 +15,11 @@ from smart_mirror.plugins.greeter import GreeterCard
 from smart_mirror.plugins.qlik_menu import QlikMenuCard
 from smart_mirror.plugins.transport import TransportCard
 from smart_mirror.plugins.weather import WeatherCard
+from smart_mirror.services.pir_sensor import PIRSensor
+from smart_mirror.services.screen_manager import ScreenManager
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class SmartMirrorApp(App):
@@ -68,6 +74,24 @@ class SmartMirrorApp(App):
         self.width = int(os.getenv("DISPLAY_WIDTH", "120"))
         self.height = int(os.getenv("DISPLAY_HEIGHT", "30"))
         self.refresh_rate = float(os.getenv("REFRESH_RATE", "1"))
+        self.screen_timeout_seconds = int(os.getenv("SCREEN_TIMEOUT_SECONDS", "900"))
+        self.pir_pin = int(os.getenv("PIR_PIN", "26"))
+
+        # Initialize services
+        self.screen_manager = ScreenManager()
+        self.pir_sensor = PIRSensor(pin=self.pir_pin, on_motion=self._on_motion)
+        self.inactivity_timer = self.set_timer(
+            self.screen_timeout_seconds, self._on_inactivity, pause=True
+        )
+
+    def _on_motion(self) -> None:
+        """Callback for when motion is detected."""
+        self.screen_manager.screen_on()
+        self.inactivity_timer.reset()
+
+    def _on_inactivity(self) -> None:
+        """Callback for when the inactivity timer expires."""
+        self.screen_manager.screen_off()
 
     def _build_combined_css(self) -> None:
         """Combine app CSS with all card CSS."""
@@ -196,12 +220,12 @@ class SmartMirrorApp(App):
     async def on_mount(self) -> None:
         """Called when app is mounted."""
         # CardWidget handles all card update scheduling via set_interval
-        pass
+        self.inactivity_timer.resume()
 
     async def on_unmount(self) -> None:
         """Called when app is unmounting."""
         # CardWidget cleanup is handled automatically by Textual
-        pass
+        self.pir_sensor.stop()
 
 
 def main() -> None:

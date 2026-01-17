@@ -1,13 +1,8 @@
-"""Conftest for pytest fixtures and configuration."""
-
 import pytest
+from unittest.mock import MagicMock
 
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an event loop for the entire test session."""
-    import asyncio
-
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+@pytest.fixture(autouse=True)
+def mock_services(monkeypatch):
+    """Mock hardware-specific services that are initialized in the app."""
+    monkeypatch.setattr("smart_mirror.core.app.PIRSensor", MagicMock())
+    monkeypatch.setattr("smart_mirror.core.app.ScreenManager", MagicMock())
