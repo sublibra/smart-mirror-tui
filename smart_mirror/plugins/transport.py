@@ -151,14 +151,15 @@ class TransportCard(Card):
         try:
             parsed = datetime.fromisoformat(str(value))
             if parsed.tzinfo is None:
-                parsed = parsed.replace(tzinfo=timezone.utc)
+                # Assume local timezone for naive datetimes
+                parsed = parsed.astimezone()
             return parsed
         except ValueError:
             return None
 
     def _sort_key(self, item: Dict[str, Any]) -> datetime:
         """Sort by expected time, fallback to timetable, then now."""
-        fallback = self._now_provider(timezone.utc)
+        fallback = self._now_provider().astimezone()
         return item.get("expected") or item.get("timetable") or fallback
 
     def _format_departures(self, departures: List[Dict[str, Any]]) -> str:
@@ -184,7 +185,7 @@ class TransportCard(Card):
     def _format_time(self, expected: Optional[datetime]) -> str:
         """Format expected time into a human-readable string."""
         if expected:
-            now = self._now_provider(expected.tzinfo or timezone.utc)
+            now = self._now_provider().astimezone()
             delta = (expected - now).total_seconds()
             if delta < -60:
                 return "left"
