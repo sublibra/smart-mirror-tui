@@ -45,7 +45,7 @@ class QlikMenuCard(Card):
             config = CardConfig(
                 name="QlikMenu",
                 position=CardPosition.BOTTOM_RIGHT,
-                update_interval=21600,  # Update every 6 hours
+                update_interval=7200,  # Update every 2 hours
                 width=35,
                 height=8,
                 show_border=False,
@@ -89,12 +89,14 @@ class QlikMenuCard(Card):
         hour = datetime.now().hour
 
         # If weekend, start from Monday (0)
-        start_day = 0 if today >= 5 else today
-
-        # If after 09:00, shift to next day
-        if hour >= 9:
-            start_day += 1
-
+        if today >= 5:
+            start_day = 0
+        else:
+            start_day = today
+            # If after 09:00, shift to next day
+            if hour >= 9: 
+                start_day += 1
+            
         # Filter and sort menu items starting from start_day
         sorted_menu = []
         for item in menu_data:
