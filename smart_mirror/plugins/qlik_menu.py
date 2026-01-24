@@ -94,9 +94,9 @@ class QlikMenuCard(Card):
         else:
             start_day = today
             # If after 09:00, shift to next day
-            if hour >= 9: 
+            if hour >= 9:
                 start_day += 1
-            
+
         # Filter and sort menu items starting from start_day
         sorted_menu = []
         for item in menu_data:

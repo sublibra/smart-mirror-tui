@@ -9,6 +9,7 @@ from textual.widgets import Static
 
 from smart_mirror.core.widgets import CardWidget
 from smart_mirror.plugins.base import Card, CardPosition
+from smart_mirror.plugins.calendar import CalendarCard
 from smart_mirror.plugins.clock import ClockCard
 from smart_mirror.plugins.greeter import GreeterCard
 from smart_mirror.plugins.qlik_menu import QlikMenuCard
@@ -101,6 +102,13 @@ class SmartMirrorApp(App):
         processing_server_location = os.getenv("PROCESSING_SERVER_LOCATION", "")
         qlik_menu = QlikMenuCard(processing_server_location=processing_server_location)
         self.register_card(qlik_menu)
+
+        # Optionally initialize calendar card when env config is provided
+        ical_url = os.getenv("CALENDAR_ICAL_URL")
+        if ical_url:
+            max_events = int(os.getenv("CALENDAR_MAX_EVENTS", "3"))
+            calendar = CalendarCard(ical_url=ical_url, max_events=max_events)
+            self.register_card(calendar)
 
         # Optionally initialize transport card when env config is provided
         station_id = os.getenv("TRANSPORT_STATION_ID")
