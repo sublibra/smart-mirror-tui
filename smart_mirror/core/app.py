@@ -70,6 +70,16 @@ class SmartMirrorApp(App):
         self.height = int(os.getenv("DISPLAY_HEIGHT", "30"))
         self.refresh_rate = float(os.getenv("REFRESH_RATE", "1"))
 
+    @staticmethod
+    def _is_enabled(env_var: str, default: bool = True) -> bool:
+        """Return a boolean from an env flag (true/1/yes/on)."""
+
+        value = os.getenv(env_var)
+        if value is None:
+            return default
+
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+
     def _build_combined_css(self) -> None:
         """Combine app CSS with all card CSS."""
         card_css = []
@@ -83,53 +93,55 @@ class SmartMirrorApp(App):
 
     def _initialize_plugins(self) -> None:
         """Initialize default plugins/cards."""
-        # Initialize greeter card
-        user_name = os.getenv("DEFAULT_USER_NAME", "there")
-        greeter = GreeterCard(user_name=user_name)
-        self.register_card(greeter)
+        # Initialize greeter card (enabled by default)
+        if self._is_enabled("ENABLE_GREETER", True):
+            user_name = os.getenv("DEFAULT_USER_NAME", "there")
+            greeter = GreeterCard(user_name=user_name)
+            self.register_card(greeter)
 
-        # Initialize clock card
-        clock = ClockCard()
-        self.register_card(clock)
+        # Initialize clock card (enabled by default)
+        if self._is_enabled("ENABLE_CLOCK", True):
+            clock = ClockCard()
+            self.register_card(clock)
 
         # Initialize weather card with coordinates from env
-        latitude = float(os.getenv("WEATHER_LATITUDE", "52.5200"))
-        longitude = float(os.getenv("WEATHER_LONGITUDE", "13.4050"))
-        weather = WeatherCard(latitude=latitude, longitude=longitude)
-        self.register_card(weather)
+        if self._is_enabled("ENABLE_WEATHER", True):
+            latitude = float(os.getenv("WEATHER_LATITUDE", "52.5200"))
+            longitude = float(os.getenv("WEATHER_LONGITUDE", "13.4050"))
+            weather = WeatherCard(latitude=latitude, longitude=longitude)
+            self.register_card(weather)
 
-        # Initialize Qlik Menu card
+        # Initialize Qlik Menu card (always on for now)
         processing_server_location = os.getenv("PROCESSING_SERVER_LOCATION", "")
         qlik_menu = QlikMenuCard(processing_server_location=processing_server_location)
         self.register_card(qlik_menu)
 
         # Optionally initialize calendar card when env config is provided
-        ical_url = os.getenv("CALENDAR_ICAL_URL")
-        if ical_url:
-            max_events = int(os.getenv("CALENDAR_MAX_EVENTS", "3"))
-            calendar = CalendarCard(ical_url=ical_url, max_events=max_events)
-            self.register_card(calendar)
+        if self._is_enabled("ENABLE_CALENDAR", False):
+            ical_url = os.getenv("CALENDAR_ICAL_URL")
+            if ical_url:
+                max_events = int(os.getenv("CALENDAR_MAX_EVENTS", "3"))
+                calendar = CalendarCard(ical_url=ical_url, max_events=max_events)
+                self.register_card(calendar)
 
         # Optionally initialize transport card when env config is provided
-        station_id = os.getenv("TRANSPORT_STATION_ID")
-        api_key = os.getenv("TRANSPORT_API_KEY")
-        if station_id and api_key:
-            transport_update = int(os.getenv("TRANSPORT_UPDATE_INTERVAL", "120"))
-            delay_threshold = int(os.getenv("TRANSPORT_DELAY_THRESHOLD", "120"))
-            time_window = int(os.getenv("TRANSPORT_TIME_WINDOW", "60"))
-            max_departures = int(os.getenv("TRANSPORT_MAX_DEPARTURES", "6"))
-            transport = TransportCard(
-                station_id=station_id,
-                api_key=api_key,
-                update_interval=transport_update,
-                delay_threshold=delay_threshold,
-                time_window=time_window,
-                max_departures=max_departures,
-            )
-            self.register_card(transport)
-        else:
-            # Transport not configured; skip registration
-            pass
+        if self._is_enabled("ENABLE_TRANSPORT", False):
+            station_id = os.getenv("TRANSPORT_STATION_ID")
+            api_key = os.getenv("TRANSPORT_API_KEY")
+            if station_id and api_key:
+                transport_update = int(os.getenv("TRANSPORT_UPDATE_INTERVAL", "120"))
+                delay_threshold = int(os.getenv("TRANSPORT_DELAY_THRESHOLD", "120"))
+                time_window = int(os.getenv("TRANSPORT_TIME_WINDOW", "60"))
+                max_departures = int(os.getenv("TRANSPORT_MAX_DEPARTURES", "6"))
+                transport = TransportCard(
+                    station_id=station_id,
+                    api_key=api_key,
+                    update_interval=transport_update,
+                    delay_threshold=delay_threshold,
+                    time_window=time_window,
+                    max_departures=max_departures,
+                )
+                self.register_card(transport)
 
     def register_card(self, card: Card) -> None:
         """Register a card/plugin with the application.
