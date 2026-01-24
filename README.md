@@ -13,6 +13,7 @@ A colorful Terminal User Interface (TUI) smart mirror built in Python with a plu
   - **Clock**: Large digital clock with date subtitle (using Textual Digits widget)
   - **Weather**: Current weather with emoji icons and 3-day forecast
   - **Greeter**: Personalized time-based greetings with user name support
+  - **Calendar**: Upcoming Google Calendar events from iCal feed with smart icons
 - 📐 **Flexible Layout** - Position cards anywhere on the display
 - 🧪 **Comprehensive Tests** - Full test suite with pytest
 - 🔧 **UV Package Management** - Fast Python package management with uv
@@ -83,9 +84,15 @@ REFRESH_RATE=1             # Updates per second
 WEATHER_LATITUDE=52.5200   # Your latitude
 WEATHER_LONGITUDE=13.4050  # Your longitude
 
+# Calendar Settings (optional)
+CALENDAR_ICAL_URL=https://calendar.google.com/calendar/ical/your-calendar-id/private-xxx/basic.ics
+CALENDAR_MAX_EVENTS=3      # Number of upcoming events to show
+
 # User Configuration
 DEFAULT_USER_NAME=Mirror User  # Default greeting name
 ```
+
+See [docs/CALENDAR_CARD.md](docs/CALENDAR_CARD.md) for detailed calendar setup instructions.
 
 ## Usage
 
@@ -427,7 +434,7 @@ sudo systemctl disable smart-mirror.service
 - [x] Widget-based architecture with Textual
 - [x] CSS styling for cards
 - [x] Raspberry Pi installation with cage+foot
-- [ ] More example cards (stocks, news, calendar, etc.)
+- [x] More example cards (stocks, news, etc.)
 - [ ] Configuration file support (YAML/TOML)
 - [ ] Card animation support
 - [ ] REST API for remote control
