@@ -86,9 +86,14 @@ class QlikMenuCard(Card):
         """
         # Get current weekday (0=Monday, 6=Sunday)
         today = datetime.now().weekday()
+        hour = datetime.now().hour
 
         # If weekend, start from Monday (0)
         start_day = 0 if today >= 5 else today
+
+        # If after 09:00, shift to next day
+        if hour >= 9:
+            start_day += 1
 
         # Filter and sort menu items starting from start_day
         sorted_menu = []
