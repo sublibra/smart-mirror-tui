@@ -28,13 +28,18 @@ class CalendarCard(Card):
 
     # Event type icons (customize based on event patterns)
     EVENT_ICONS = {
-        "meeting": "🗓️",
-        "call": "📞",
+        "möte": "🗓️",
+        "samtal": "📞",
+        "bil": "🚗",
+        "middag": "🍽️",
+        "tandläkar": "🏥",
+        "hjärt": "❤️",
+        "fira": "🎉",
         "lunch": "🍽️",
-        "birthday": "🎂",
-        "travel": "✈️",
-        "workout": "💪",
-        "doctor": "🏥",
+        "födelsedag": "🎂",
+        "resa": "✈️",
+        "träna": "💪",
+        "läkar": "🏥",
         "default": "📅",
     }
 
