@@ -16,6 +16,7 @@ class WeatherCard(Card):
     #weather Static {
         text-align: left;
         padding: 1;
+        align: center bottom;
     }
 
     #weather .weather-now {
@@ -117,7 +118,6 @@ class WeatherCard(Card):
 
         icon = self._get_weather_icon(code)
         lines.append(f"[bold]{icon}  Now: {temp}°C[/bold]")
-        lines.append("")
         lines.append(f"💨 Wind: {wind} km/h")
         lines.append(f"💧 Humidity: {humidity}%")
 
@@ -131,7 +131,6 @@ class WeatherCard(Card):
 
             if len(temps_max) >= 3 and len(times) >= 3:
                 lines.append("")
-                lines.append("Forecast:")
                 for i in range(1, min(4, len(temps_max))):  # Next 3 days
                     try:
                         from datetime import datetime

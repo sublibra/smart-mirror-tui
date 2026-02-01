@@ -26,7 +26,7 @@ class TransportCard(Card):
     DEFAULT_CSS = """
     #transport {
         layout: vertical;
-        align: center top;
+        align: center bottom;
     }
 
     #transport Static {
