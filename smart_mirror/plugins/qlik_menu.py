@@ -20,7 +20,7 @@ class QlikMenuCard(Card):
         text-style: bold;
         color: orange;
         text-align: center;
-        content-align: center middle;
+        align: center bottom;
     }
     """
     # Swedish day name to weekday number mapping (0=Monday, 6=Sunday)
@@ -121,9 +121,9 @@ class QlikMenuCard(Card):
             lines.append(f"[bold {color}]{item['day']}:[/bold {color}]")
 
             # Add bullet points for dishes
-            color_dish = "white" if idx == 0 else "gray"
+            color_dish = "white" if idx == 0 else "dim"
             for dish in item["dishes"]:
-                lines.append(f"[{color_dish}]  • {dish}[/{color_dish}]")
+                lines.append(f"[{color_dish}]- {dish}[/{color_dish}]")
 
             # Add spacing between days (except after last day)
             if idx < len(sorted_menu) - 1:
