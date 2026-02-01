@@ -69,7 +69,7 @@ class CalendarCard(Card):
         if config is None:
             config = CardConfig(
                 name="Calendar",
-                position=CardPosition.TOP_RIGHT,
+                position=CardPosition.MIDDLE_RIGHT,
                 update_interval=300,  # Update every 5 minutes
                 width=40,
                 height=12,
