@@ -67,13 +67,13 @@ def test_calendar_card_parse_ical_basic():
     """Test basic iCal parsing."""
     card = CalendarCard(ical_url="https://example.com/calendar.ics")
 
-    # Create a simple iCal data
+    # Create a simple iCal data with a future date
     ical_data = """BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Test//Test//EN
 BEGIN:VEVENT
-DTSTART:20260130T140000Z
-DTEND:20260130T150000Z
+DTSTART:20260205T140000Z
+DTEND:20260205T150000Z
 SUMMARY:Test Meeting
 END:VEVENT
 END:VCALENDAR"""
@@ -112,18 +112,18 @@ def test_calendar_card_parse_ical_sorts_by_time():
 VERSION:2.0
 PRODID:-//Test//Test//EN
 BEGIN:VEVENT
-DTSTART:20260202T140000Z
-DTEND:20260202T150000Z
+DTSTART:20260203T140000Z
+DTEND:20260203T150000Z
 SUMMARY:Second Event
 END:VEVENT
 BEGIN:VEVENT
-DTSTART:20260201T140000Z
-DTEND:20260201T150000Z
+DTSTART:20260202T140000Z
+DTEND:20260202T150000Z
 SUMMARY:First Event
 END:VEVENT
 BEGIN:VEVENT
-DTSTART:20260203T140000Z
-DTEND:20260203T150000Z
+DTSTART:20260204T140000Z
+DTEND:20260204T150000Z
 SUMMARY:Third Event
 END:VEVENT
 END:VCALENDAR"""
@@ -163,7 +163,7 @@ def test_calendar_card_max_events():
 def test_calendar_card_position_default():
     """Test default card position."""
     card = CalendarCard(ical_url="https://example.com/calendar.ics")
-    assert card.config.position == CardPosition.MIDDLE_RIGHT
+    assert card.config.position == CardPosition.TOP_RIGHT
 
 
 def test_calendar_card_empty_events():

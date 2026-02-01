@@ -1,7 +1,8 @@
 """Calendar card for displaying upcoming Google Calendar events from iCal feed."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 import httpx
 from icalendar import Calendar
@@ -29,18 +30,27 @@ class CalendarCard(Card):
     # Event type icons (customize based on event patterns)
     EVENT_ICONS = {
         "möte": "🗓️",
+        "meeting": "🗓️",
         "samtal": "📞",
+        "call": "📞",
         "bil": "🚗",
         "middag": "🍽️",
+        "dinner": "🍽️",
         "tandläkar": "🏥",
         "hjärt": "❤️",
         "fira": "🎉",
         "lunch": "🍽️",
         "födelsedag": "🎂",
+        "birthday": "🎂",
         "resa": "✈️",
+        "travel": "✈️",
         "träna": "💪",
+        "workout": "💪",
         "läkar": "🏥",
+        "doctor": "🏥",
         "default": "📅",
+        "sop": "🗑️",
+        "klipp": "💇",
     }
 
     def __init__(
@@ -164,7 +174,8 @@ class CalendarCard(Card):
         try:
             cal = Calendar.from_ical(ical_data)
             events = []
-            now = datetime.now()
+            # Use timezone-aware current time in local timezone
+            now = datetime.now().astimezone()
 
             for component in cal.walk():
                 if component.name == "VEVENT":
@@ -175,20 +186,20 @@ class CalendarCard(Card):
                         # Handle different datetime formats
                         start_dt = start.dt
                         if isinstance(start_dt, datetime):
-                            # Make timezone-aware if naive
+                            # If naive, assume it's in local timezone
                             if start_dt.tzinfo is None:
-                                from datetime import timezone
-
-                                start_dt = start_dt.replace(tzinfo=timezone.utc)
+                                start_dt = start_dt.replace(tzinfo=None)
+                                start_dt = start_dt.astimezone()
+                            else:
+                                # Convert to local timezone
+                                start_dt = start_dt.astimezone()
                         else:
-                            # If it's just a date, convert to datetime at midnight
-                            from datetime import timezone
-
+                            # If it's just a date, convert to datetime at midnight in local timezone
                             start_dt = datetime.combine(start_dt, datetime.min.time())
-                            start_dt = start_dt.replace(tzinfo=timezone.utc)
+                            start_dt = start_dt.astimezone()
 
-                        # Only include future events
-                        if start_dt.replace(tzinfo=None) >= now.replace(tzinfo=None):
+                        # Only include future events (compare timezone-aware datetimes)
+                        if start_dt >= now:
                             events.append(
                                 {
                                     "summary": str(summary),
