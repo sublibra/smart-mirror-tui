@@ -25,3 +25,4 @@ def enable_default_cards(monkeypatch):
     monkeypatch.setenv("ENABLE_CALENDAR", "")
     monkeypatch.setenv("TRANSPORT_API_KEY", "")
     monkeypatch.setenv("TRANSPORT_STATION_ID", "")
+    monkeypatch.setenv("ENABLE_PIR", "")

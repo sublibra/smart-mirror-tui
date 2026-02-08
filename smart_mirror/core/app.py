@@ -55,6 +55,7 @@ class SmartMirrorApp(App):
         load_dotenv(dotenv_path=env_path)
         self.cards: Dict[str, Card] = {}
         self.card_widgets: Dict[str, CardWidget] = {}
+        self.pir_controller = None
 
         # Initialize plugins first to collect their CSS
         self._initialize_plugins()
@@ -123,6 +124,19 @@ class SmartMirrorApp(App):
                 max_events = int(os.getenv("CALENDAR_MAX_EVENTS", "3"))
                 calendar = CalendarCard(ical_url=ical_url, max_events=max_events)
                 self.register_card(calendar)
+
+        # Optionally initialize PIR screen controller
+        if self._is_enabled("ENABLE_PIR", False):
+            from smart_mirror.services.pir_controller import PIRScreenController
+
+            gpio_pin = int(os.getenv("PIR_GPIO_PIN", "26"))
+            screen_output = os.getenv("PIR_SCREEN_OUTPUT", "HDMI-A-1")
+            timeout = int(os.getenv("PIR_SCREEN_TIMEOUT", "120"))
+            self.pir_controller = PIRScreenController(
+                gpio_pin=gpio_pin,
+                screen_output=screen_output,
+                timeout=timeout,
+            )
 
         # Optionally initialize transport card when env config is provided
         if self._is_enabled("ENABLE_TRANSPORT", False):
@@ -216,12 +230,14 @@ class SmartMirrorApp(App):
     async def on_mount(self) -> None:
         """Called when app is mounted."""
         # CardWidget handles all card update scheduling via set_interval
-        pass
+        if self.pir_controller is not None:
+            self.pir_controller.start()
 
     async def on_unmount(self) -> None:
         """Called when app is unmounting."""
         # CardWidget cleanup is handled automatically by Textual
-        pass
+        if self.pir_controller is not None:
+            self.pir_controller.stop()
 
 
 def main() -> None:
