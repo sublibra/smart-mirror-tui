@@ -112,8 +112,7 @@ class SmartMirrorApp(App):
             self.register_card(weather)
 
         # Initialize Qlik Menu card (always on for now)
-        processing_server_location = os.getenv("PROCESSING_SERVER_LOCATION", "")
-        qlik_menu = QlikMenuCard(processing_server_location=processing_server_location)
+        qlik_menu = QlikMenuCard()
         self.register_card(qlik_menu)
 
         # Optionally initialize calendar card when env config is provided
