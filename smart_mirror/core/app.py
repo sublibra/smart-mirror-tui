@@ -12,6 +12,7 @@ from smart_mirror.plugins.base import Card, CardPosition
 from smart_mirror.plugins.calendar import CalendarCard
 from smart_mirror.plugins.clock import ClockCard
 from smart_mirror.plugins.greeter import GreeterCard
+from smart_mirror.plugins.meal_plan import MealPlanCard
 from smart_mirror.plugins.qlik_menu import QlikMenuCard
 from smart_mirror.plugins.transport import TransportCard
 from smart_mirror.plugins.weather import WeatherCard
@@ -114,6 +115,21 @@ class SmartMirrorApp(App):
         # Initialize Qlik Menu card (always on for now)
         qlik_menu = QlikMenuCard()
         self.register_card(qlik_menu)
+
+        # Optionally initialize meal plan card when env config is provided
+        if self._is_enabled("ENABLE_MEAL_PLAN", False):
+            feed_url = os.getenv("MEAL_PLAN_FEED_URL")
+            if feed_url:
+                max_items = int(os.getenv("MEAL_PLAN_MAX_ITEMS", "6"))
+                anon_key = os.getenv("MEAL_PLAN_ANON_KEY", "")
+                update_interval = int(os.getenv("MEAL_PLAN_UPDATE_INTERVAL", "300"))
+                meal_plan = MealPlanCard(
+                    feed_url=feed_url,
+                    anon_key=anon_key,
+                    max_items=max_items,
+                    update_interval=update_interval,
+                )
+                self.register_card(meal_plan)
 
         # Optionally initialize calendar card when env config is provided
         if self._is_enabled("ENABLE_CALENDAR", False):

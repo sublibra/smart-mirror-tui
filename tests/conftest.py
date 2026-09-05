@@ -23,5 +23,7 @@ def enable_default_cards(monkeypatch):
     # Optional cards remain disabled unless tests set config explicitly
     monkeypatch.setenv("ENABLE_TRANSPORT", "")
     monkeypatch.setenv("ENABLE_CALENDAR", "")
+    monkeypatch.setenv("ENABLE_MEAL_PLAN", "")
     monkeypatch.setenv("TRANSPORT_API_KEY", "")
     monkeypatch.setenv("TRANSPORT_STATION_ID", "")
+    monkeypatch.setenv("MEAL_PLAN_FEED_URL", "")
