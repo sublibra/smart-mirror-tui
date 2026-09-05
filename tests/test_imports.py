@@ -6,6 +6,7 @@ from smart_mirror import (
     CardPosition,
     ClockCard,
     GreeterCard,
+    MealPlanCard,
     TransportCard,
     WeatherCard,
 )
@@ -19,6 +20,7 @@ def test_imports():
     assert ClockCard is not None
     assert WeatherCard is not None
     assert GreeterCard is not None
+    assert MealPlanCard is not None
     assert TransportCard is not None
 
 

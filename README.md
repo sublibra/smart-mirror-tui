@@ -14,6 +14,7 @@ A colorful Terminal User Interface (TUI) smart mirror built in Python with a plu
   - **Weather**: Current weather with emoji icons and 3-day forecast
   - **Greeter**: Personalized time-based greetings with user name support
   - **Calendar**: Upcoming Google Calendar events from iCal feed with smart icons
+  - **Meal plan**: This week's dinners from Shoplist (protein, title, day)
 - 📐 **Flexible Layout** - Position cards anywhere on the display
 - 🧪 **Comprehensive Tests** - Full test suite with pytest
 - 🔧 **UV Package Management** - Fast Python package management with uv
@@ -88,11 +89,18 @@ WEATHER_LONGITUDE=13.4050  # Your longitude
 CALENDAR_ICAL_URL=https://calendar.google.com/calendar/ical/your-calendar-id/private-xxx/basic.ics
 CALENDAR_MAX_EVENTS=3      # Number of upcoming events to show
 
+# Meal plan (optional) — Shoplist Sharing → Mirror feed
+ENABLE_MEAL_PLAN=true
+MEAL_PLAN_FEED_URL=https://<project>.supabase.co/functions/v1/meal-plan-feed?token=<uuid>
+MEAL_PLAN_ANON_KEY=your-public-anon-key
+MEAL_PLAN_MAX_ITEMS=6
+MEAL_PLAN_UPDATE_INTERVAL=300
+
 # User Configuration
 DEFAULT_USER_NAME=Mirror User  # Default greeting name
 ```
 
-See [docs/CALENDAR_CARD.md](docs/CALENDAR_CARD.md) for detailed calendar setup instructions.
+See [docs/CALENDAR_CARD.md](docs/CALENDAR_CARD.md) for calendar setup, and [docs/MEAL_PLAN_CARD.md](docs/MEAL_PLAN_CARD.md) for the Shoplist feed.
 
 ## Usage
 
