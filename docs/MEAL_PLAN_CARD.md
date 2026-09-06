@@ -4,11 +4,11 @@ The Meal Plan Card shows this week's dinners from [Shoplist](https://shoplist.wt
 
 ## Features
 
-- 🍽 Protein emoji, recipe title, and day (Today / Tomorrow / Mon…)
+- 🍽 Protein emoji, recipe title, and day inline when set, e.g. `Curry (mån)`
 - 🎨 Same look as the Calendar card (first meal bold, later meals dim)
 - 🔄 Auto-updates every 5 minutes (configurable)
 - 📍 Positioned at TOP_RIGHT by default
-- Cooked meals are struck through and sorted last
+- Cooked meals are hidden
 
 ## Configuration
 
@@ -46,20 +46,17 @@ The Pi does **not** log in to Shoplist. Auth is the unguessable token plus the p
 ```
 🍽  This week
 
-🐔  Chicken curry
-   Today
+🐔 Curry (mån)
 
-🐟  Fish stew
-   Tomorrow
+🐟 Fish stew (tis)
 
-🌱  Lentil soup
-   Wed
+🌱 Linssoppa
 ```
 
 - **First uncooked meal** in white/bold
 - **Remaining meals** dimmed
-- **Cooked meals** struck through, after uncooked ones
-- **Unscheduled** recipes (no day) have no subtitle and sort after dated meals
+- **Cooked meals** are hidden
+- **Day** is a Swedish short name in parentheses (`mån`–`sön`) when the recipe has one; omitted if unscheduled
 
 ## Customization
 
