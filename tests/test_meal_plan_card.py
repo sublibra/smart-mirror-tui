@@ -60,7 +60,7 @@ def test_parse_meals_empty_payload():
     assert parse_meals({"entries": []}) == []
 
 
-def test_sort_meals_starts_from_today_and_puts_cooked_last():
+def test_sort_meals_starts_from_today_and_omits_cooked():
     meals = [
         Meal(title="Sun", day="sun", protein=None, cooked=False),
         Meal(title="Tue cooked", day="tue", protein=None, cooked=True),
@@ -74,26 +74,26 @@ def test_sort_meals_starts_from_today_and_puts_cooked_last():
         "Wed",
         "Sun",
         "Unscheduled",
-        "Tue cooked",
     ]
 
 
-def test_format_highlights_today_and_labels_days():
+def test_format_puts_swedish_day_on_the_title_line():
     card = _card()
     card._error_message = ""
     card._meals = [
         Meal(title="Curry", day="mon", protein="chicken", cooked=False),
         Meal(title="Stew", day="tue", protein="fish", cooked=False),
         Meal(title="Leftovers", day="mon", protein="chicken", cooked=True),
+        Meal(title="Soup", day=None, protein=None, cooked=False),
     ]
     formatted = card._format_plan()
     assert "🍽  This week" in formatted
-    assert "🐔 Curry" in formatted
-    assert "Today" in formatted
-    assert "🐟 Stew" in formatted
-    assert "Tomorrow" in formatted
-    assert "strike" in formatted
-    assert "Leftovers" in formatted
+    assert "🐔 Curry (mån)" in formatted
+    assert "🐟 Stew (tis)" in formatted
+    assert "Leftovers" not in formatted
+    assert "Soup" in formatted
+    assert "Soup (" not in formatted
+    assert "strike" not in formatted
 
 
 def test_format_empty_and_error():
@@ -104,6 +104,16 @@ def test_format_empty_and_error():
 
     card._error_message = "HTTP Error: 404"
     assert "Meal Plan Error" in card._format_plan()
+
+
+def test_format_hides_week_when_everything_is_cooked():
+    card = _card()
+    card._error_message = ""
+    card._meals = [
+        Meal(title="Leftovers", day="mon", protein="chicken", cooked=True),
+    ]
+    assert "No meals this week" in card._format_plan()
+    assert "Leftovers" not in card._format_plan()
 
 
 def test_max_items_limits_display():

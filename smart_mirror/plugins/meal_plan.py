@@ -12,13 +12,13 @@ from smart_mirror.plugins.base import Card, CardConfig, CardPosition
 
 DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 DAY_LABELS = {
-    "mon": "Mon",
-    "tue": "Tue",
-    "wed": "Wed",
-    "thu": "Thu",
-    "fri": "Fri",
-    "sat": "Sat",
-    "sun": "Sun",
+    "mon": "mån",
+    "tue": "tis",
+    "wed": "ons",
+    "thu": "tor",
+    "fri": "fre",
+    "sat": "lör",
+    "sun": "sön",
 }
 
 # Same emoji set as Shoplist's protein tags.
@@ -92,10 +92,11 @@ def day_sort_key(day: Optional[str], today_idx: int) -> int:
 
 
 def sort_meals(meals: list[Meal], today_idx: int) -> list[Meal]:
-    """Uncooked first, then by day from today, then original order."""
+    """Uncooked meals by day from today, then original order. Cooked are omitted."""
+    uncooked = [(i, meal) for i, meal in enumerate(meals) if not meal.cooked]
     ranked = sorted(
-        enumerate(meals),
-        key=lambda pair: (pair[1].cooked, day_sort_key(pair[1].day, today_idx), pair[0]),
+        uncooked,
+        key=lambda pair: (day_sort_key(pair[1].day, today_idx), pair[0]),
     )
     return [meal for _, meal in ranked]
 
@@ -137,7 +138,7 @@ class MealPlanCard(Card):
         if config is None:
             config = CardConfig(
                 name="MealPlan",
-                position=CardPosition.TOP_RIGHT,
+                position=CardPosition.BOTTOM_LEFT,
                 update_interval=max(5, update_interval),
                 width=40,
                 height=12,
@@ -158,16 +159,14 @@ class MealPlanCard(Card):
         self._widget = Static("Loading meal plan...", classes="meal-plan-title")
         yield self._widget
 
-    def _format_day(self, day: Optional[str], today_idx: int) -> Optional[str]:
-        """Human-readable day label, or None if unscheduled."""
-        if day is None:
-            return None
-        offset = day_sort_key(day, today_idx)
-        if offset == 0:
-            return "Today"
-        if offset == 1:
-            return "Tomorrow"
-        return DAY_LABELS.get(day)
+    def _meal_label(self, meal: Meal) -> str:
+        """Title with optional Swedish short day, e.g. 'Curry (mån)'."""
+        if meal.day is None:
+            return meal.title
+        day_label = DAY_LABELS.get(meal.day)
+        if not day_label:
+            return meal.title
+        return f"{meal.title} ({day_label})"
 
     def _format_plan(self) -> str:
         """Format meals for display."""
@@ -179,23 +178,17 @@ class MealPlanCard(Card):
 
         today_idx = self._now_provider().weekday()
         ranked = sort_meals(self._meals, today_idx)[: self.max_items]
+        if not ranked:
+            return "[bold]🍽  This week[/bold]\n\nNo meals this week"
 
         lines = ["[bold]🍽  This week[/bold]", ""]
         for i, meal in enumerate(ranked):
             icon = protein_icon(meal.protein)
-            day_label = self._format_day(meal.day, today_idx)
-            title = meal.title
-            if meal.cooked:
-                title = f"[strike]{title}[/strike]"
-
-            if i == 0 and not meal.cooked:
-                lines.append(f"[bold]{icon} {title}[/bold]")
-                if day_label:
-                    lines.append(f"[white]   {day_label}[/white]")
+            label = self._meal_label(meal)
+            if i == 0:
+                lines.append(f"[bold]{icon} {label}[/bold]")
             else:
-                lines.append(f"[dim]{icon} {title}[/dim]")
-                if day_label:
-                    lines.append(f"[dim]   {day_label}[/dim]")
+                lines.append(f"[dim]{icon} {label}[/dim]")
 
             if i < len(ranked) - 1:
                 lines.append("")

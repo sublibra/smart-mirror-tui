@@ -69,7 +69,7 @@ class WeatherCard(Card):
         if config is None:
             config = CardConfig(
                 name="Weather",
-                position=CardPosition.BOTTOM_LEFT,
+                position=CardPosition.MIDDLE_LEFT,
                 update_interval=300,  # Update every 5 minutes
                 width=40,
                 height=12,
