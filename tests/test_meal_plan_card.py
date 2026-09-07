@@ -87,7 +87,7 @@ def test_format_puts_swedish_day_on_the_title_line():
         Meal(title="Soup", day=None, protein=None, cooked=False),
     ]
     formatted = card._format_plan()
-    assert "🍽  This week" in formatted
+    assert "🏠  Meny" in formatted
     assert "🐔 Curry (mån)" in formatted
     assert "🐟 Stew (tis)" in formatted
     assert "Leftovers" not in formatted
@@ -100,10 +100,10 @@ def test_format_empty_and_error():
     card = _card()
     card._error_message = ""
     card._meals = []
-    assert "No meals this week" in card._format_plan()
+    assert "Ingen meny denna vecka" in card._format_plan()
 
-    card._error_message = "HTTP Error: 404"
-    assert "Meal Plan Error" in card._format_plan()
+    card._error_message = "HTTP-fel: 404"
+    assert "Menyfel" in card._format_plan()
 
 
 def test_format_hides_week_when_everything_is_cooked():
@@ -112,7 +112,7 @@ def test_format_hides_week_when_everything_is_cooked():
     card._meals = [
         Meal(title="Leftovers", day="mon", protein="chicken", cooked=True),
     ]
-    assert "No meals this week" in card._format_plan()
+    assert "Ingen meny denna vecka" in card._format_plan()
     assert "Leftovers" not in card._format_plan()
 
 
@@ -131,7 +131,7 @@ def test_max_items_limits_display():
 
 
 def test_default_position():
-    assert _card().config.position == CardPosition.TOP_RIGHT
+    assert _card().config.position == CardPosition.BOTTOM_LEFT
     assert _card().config.update_interval == 300
     assert _card(update_interval=120).config.update_interval == 120
     assert _card(update_interval=1).config.update_interval == 5
@@ -143,7 +143,7 @@ async def test_compose_and_missing_url():
     widgets = list(card.compose())
     assert len(widgets) == 1
     await card.update()
-    assert "No feed URL configured" in card._error_message
+    assert "Ingen URL konfigurerad" in card._error_message
 
 
 @pytest.mark.asyncio
@@ -190,4 +190,4 @@ async def test_update_http_error(monkeypatch):
         AsyncMock(side_effect=httpx.HTTPError("boom")),
     )
     await card.update()
-    assert "HTTP Error" in card._error_message
+    assert "HTTP-fel" in card._error_message

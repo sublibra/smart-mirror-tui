@@ -15,13 +15,13 @@ MORNING_HOUR = 8
 NOON_HOUR = 12
 EVENING_HOUR = 18
 TODAY_PERIODS = (
-    ("Morning", MORNING_HOUR),
-    ("Noon", NOON_HOUR),
-    ("Evening", EVENING_HOUR),
+    ("Morgon", MORNING_HOUR),
+    ("Lunch", NOON_HOUR),
+    ("Kväll", EVENING_HOUR),
 )
 TOMORROW_PERIODS = (
-    ("Morning", MORNING_HOUR),
-    ("Noon", NOON_HOUR),
+    ("Morgon", MORNING_HOUR),
+    ("Lunch", NOON_HOUR),
 )
 
 WINDY_KMH = 20.0
@@ -129,11 +129,11 @@ def dressing_notes(today_slots: list[PeriodForecast]) -> list[str]:
 
     notes: list[str] = []
     if rainy:
-        notes.append("☔ Bring an umbrella")
+        notes.append("☔ Ta med paraply")
     if rainy and windy:
-        notes.append("🧥 It is windy and rainy")
+        notes.append("🧥 Det blåser och regnar")
     if cold:
-        notes.append("🧣 It's cold")
+        notes.append("🧣 Det är kallt")
     return notes
 
 
@@ -196,6 +196,7 @@ class WeatherCard(Card):
         if config is None:
             config = CardConfig(
                 name="Weather",
+                title="Väder",
                 position=CardPosition.MIDDLE_LEFT,
                 update_interval=300,  # Update every 5 minutes
                 width=40,
@@ -207,13 +208,13 @@ class WeatherCard(Card):
         self.latitude = latitude
         self.longitude = longitude
         self._weather_data: dict = {}
-        self._error_message = "Loading..."
+        self._error_message = "Laddar..."
         self._weather_widget: Optional[Static] = None
         self._now_provider: Callable[..., datetime] = datetime.now
 
     def compose(self) -> ComposeResult:
         """Compose the weather display."""
-        self._weather_widget = Static("Loading weather data...", classes="weather-now")
+        self._weather_widget = Static("Hämtar väder...", classes="weather-now")
         yield self._weather_widget
 
     def _get_weather_icon(self, code: int) -> str:
@@ -252,11 +253,11 @@ class WeatherCard(Card):
 
     def _format_weather(self) -> str:
         """Format weather data for display."""
-        if self._error_message and self._error_message != "Loading...":
-            return f"Error: {self._error_message}"
+        if self._error_message and self._error_message != "Laddar...":
+            return f"Fel: {self._error_message}"
 
         if not self._weather_data:
-            return "Loading weather data..."
+            return "Hämtar väder..."
 
         hourly = self._weather_data.get("hourly") or {}
         slots = index_hourly(hourly)
@@ -264,7 +265,7 @@ class WeatherCard(Card):
         today = now.date()
         tomorrow = today + timedelta(days=1)
 
-        lines: list[str] = ["[bold]Today[/bold]"]
+        lines: list[str] = ["[bold]Idag[/bold]"]
         today_forecasts: list[PeriodForecast] = []
         for label, hour in TODAY_PERIODS:
             slot = slots.get((today, hour))
@@ -276,7 +277,7 @@ class WeatherCard(Card):
                 today_forecasts.append(slot)
 
         lines.append("")
-        lines.append("[bold]Tomorrow[/bold]")
+        lines.append("[bold]Imorgon[/bold]")
         for label, hour in TOMORROW_PERIODS:
             slot = slots.get((tomorrow, hour))
             lines.append(self._format_period_line(label, slot))
@@ -305,7 +306,7 @@ class WeatherCard(Card):
                 self._weather_data = data
                 self._error_message = ""
         except Exception as e:
-            self._error_message = f"Error: {str(e)[:20]}"
+            self._error_message = f"Fel: {str(e)[:20]}"
 
         if self._weather_widget:
             self._weather_widget.update(self._format_weather())

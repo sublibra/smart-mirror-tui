@@ -26,8 +26,8 @@ async def test_transport_card_compose():
 @pytest.mark.asyncio
 async def test_transport_card_update_with_delay(monkeypatch):
     now = datetime(2024, 1, 1, 10, 0, tzinfo=timezone.utc)
-    expected_time = "2024-01-01T10:08:00"
-    timetable_time = "2024-01-01T10:05:00"
+    expected_time = "2024-01-01T10:08:00+00:00"
+    timetable_time = "2024-01-01T10:05:00+00:00"
 
     payload = {
         "departures": [
@@ -53,15 +53,17 @@ async def test_transport_card_update_with_delay(monkeypatch):
     await card.update()
 
     assert "Central" in card._last_render
-    assert "in 8m" in card._last_render
-    assert "[WARN +3m]" in card._last_render
+    assert "om 8 min" in card._last_render
+    assert "⚠️" in card._last_render
+    assert "+3m" in card._last_render
+    assert "🚆 🚍" in card._last_render
 
 
 @pytest.mark.asyncio
 async def test_transport_card_update_without_delay(monkeypatch):
     now = datetime(2024, 1, 1, 10, 0, tzinfo=timezone.utc)
-    expected_time = "2024-01-01T10:06:00"
-    timetable_time = "2024-01-01T10:05:00"
+    expected_time = "2024-01-01T10:06:00+00:00"
+    timetable_time = "2024-01-01T10:05:00+00:00"
 
     payload = {
         "departures": [
@@ -96,7 +98,7 @@ async def test_transport_card_missing_configuration():
 
     await card.update()
 
-    assert "not configured" in card._last_render.lower()
+    assert "inte konfigurerat" in card._last_render.lower()
 
 
 @pytest.mark.asyncio
@@ -108,4 +110,5 @@ async def test_transport_card_no_departures(monkeypatch):
 
     await card.update()
 
-    assert "no upcoming" in card._last_render.lower()
+    assert "inga avgångar" in card._last_render.lower()
+    assert "🚆 🚍" in card._last_render

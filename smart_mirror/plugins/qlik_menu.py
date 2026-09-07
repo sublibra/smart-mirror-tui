@@ -95,7 +95,7 @@ class QlikMenuCard(Card):
 
     def compose(self) -> ComposeResult:
         """Compose the Qlik Menu display."""
-        self._qlik_menu_widget = Static("Loading menu...")
+        self._qlik_menu_widget = Static("Hämtar meny...")
         yield self._qlik_menu_widget
 
     async def _get_menu_text(self) -> str:
@@ -103,11 +103,11 @@ class QlikMenuCard(Card):
         try:
             menu_data = await self._get_menu()
             if not menu_data:
-                return "[bold red] No menu data available[/bold red]"
+                return "[bold red] Ingen meny tillgänglig[/bold red]"
             return self._format_menu(menu_data)
         except Exception as e:
             self.log(f"Error fetching menu: {e}", level="error")
-            return "[bold red] Failed to load menu[/bold red]"
+            return "[bold red] Kunde inte hämta meny[/bold red]"
 
     def _format_menu(self, menu_data: list) -> str:
         """Format menu data with day names and bullet points.
@@ -146,7 +146,7 @@ class QlikMenuCard(Card):
 
         # Format output
         lines = []
-        lines.append("[bold orange]🍽  Qlik Menu[/bold orange]")  # Header with icon
+        lines.append("[bold orange]🏢  Meny[/bold orange]")
         lines.append("")
 
         for idx, (_day_num, item) in enumerate(sorted_menu):

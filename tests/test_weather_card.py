@@ -77,20 +77,20 @@ def test_dressing_notes_umbrella_jacket_and_scarf():
 
     notes = dressing_notes([rainy_windy, cold])
     assert notes == [
-        "☔ Bring an umbrella",
-        "🧥 It is windy and rainy",
-        "🧣 It's cold",
+        "☔ Ta med paraply",
+        "🧥 Det blåser och regnar",
+        "🧣 Det är kallt",
     ]
 
 
 def test_dressing_notes_umbrella_only():
     notes = dressing_notes([_slot(temp=8, code=61, wind=5.0)])
-    assert notes == ["☔ Bring an umbrella"]
+    assert notes == ["☔ Ta med paraply"]
 
 
 def test_dressing_notes_scarf_only():
     notes = dressing_notes([_slot(temp=-3, code=0, wind=4.0)])
-    assert notes == ["🧣 It's cold"]
+    assert notes == ["🧣 Det är kallt"]
 
 
 def test_dressing_notes_empty_on_mild_clear_day():
@@ -107,19 +107,19 @@ def test_format_weather_shows_today_and_tomorrow_periods():
 
     rendered = card._format_weather()
 
-    assert "[bold]Today[/bold]" in rendered
-    assert "Morning" in rendered
-    assert "Noon" in rendered
-    assert "Evening" in rendered
-    assert "[bold]Tomorrow[/bold]" in rendered
+    assert "[bold]Idag[/bold]" in rendered
+    assert "Morgon" in rendered
+    assert "Lunch" in rendered
+    assert "Kväll" in rendered
+    assert "[bold]Imorgon[/bold]" in rendered
     assert "8°" in rendered
     assert "12°" in rendered
     assert "%" not in rendered
     assert "💨" in rendered
-    assert "☔ Bring an umbrella" in rendered
-    assert "🧥 It is windy and rainy" in rendered
-    assert rendered.index("Today") < rendered.index("Tomorrow")
-    assert rendered.count("Evening") == 1
+    assert "☔ Ta med paraply" in rendered
+    assert "🧥 Det blåser och regnar" in rendered
+    assert rendered.index("Idag") < rendered.index("Imorgon")
+    assert rendered.count("Kväll") == 1
 
 
 def test_format_weather_wind_icon_only_when_windy():
@@ -131,11 +131,11 @@ def test_format_weather_wind_icon_only_when_windy():
     )
 
     rendered = card._format_weather()
-    today_block, tomorrow_block = rendered.split("[bold]Tomorrow[/bold]", 1)
-    noon_line = next(line for line in today_block.splitlines() if line.startswith("Noon"))
-    morning_line = next(line for line in today_block.splitlines() if line.startswith("Morning"))
+    today_block, tomorrow_block = rendered.split("[bold]Imorgon[/bold]", 1)
+    noon_line = next(line for line in today_block.splitlines() if line.startswith("Lunch"))
+    morning_line = next(line for line in today_block.splitlines() if line.startswith("Morgon"))
     tomorrow_morning = next(
-        line for line in tomorrow_block.splitlines() if line.startswith("Morning")
+        line for line in tomorrow_block.splitlines() if line.startswith("Morgon")
     )
 
     assert "💨" in noon_line
@@ -153,9 +153,9 @@ def test_format_weather_dims_past_periods():
 
     rendered = card._format_weather()
 
-    assert "[dim]Morning" in rendered
-    assert "[dim]Noon" in rendered
-    assert "[dim]Evening" not in rendered
+    assert "[dim]Morgon" in rendered
+    assert "[dim]Lunch" in rendered
+    assert "[dim]Kväll" not in rendered
 
 
 @pytest.mark.asyncio
@@ -192,6 +192,6 @@ async def test_weather_card_update_uses_hourly_forecast(monkeypatch):
 
     assert card._error_message == ""
     rendered = card._format_weather()
-    assert "Today" in rendered
-    assert "Tomorrow" in rendered
-    assert "☔ Bring an umbrella" in rendered
+    assert "Idag" in rendered
+    assert "Imorgon" in rendered
+    assert "☔ Ta med paraply" in rendered

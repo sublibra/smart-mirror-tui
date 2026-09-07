@@ -138,6 +138,8 @@ class MealPlanCard(Card):
         if config is None:
             config = CardConfig(
                 name="MealPlan",
+                title="Meny",
+                show_title=False,
                 position=CardPosition.BOTTOM_LEFT,
                 update_interval=max(5, update_interval),
                 width=40,
@@ -151,12 +153,12 @@ class MealPlanCard(Card):
         self.max_items = max_items
         self._now_provider = now_provider or datetime.now
         self._meals: list[Meal] = []
-        self._error_message = "Loading..."
+        self._error_message = "Laddar..."
         self._widget: Optional[Static] = None
 
     def compose(self) -> ComposeResult:
         """Compose the meal plan display."""
-        self._widget = Static("Loading meal plan...", classes="meal-plan-title")
+        self._widget = Static("Hämtar meny...", classes="meal-plan-title")
         yield self._widget
 
     def _meal_label(self, meal: Meal) -> str:
@@ -170,18 +172,18 @@ class MealPlanCard(Card):
 
     def _format_plan(self) -> str:
         """Format meals for display."""
-        if self._error_message and self._error_message != "Loading...":
-            return f"[bold red]Meal Plan Error[/bold red]\n{self._error_message}"
+        if self._error_message and self._error_message != "Laddar...":
+            return f"[bold red]Menyfel[/bold red]\n{self._error_message}"
 
         if not self._meals:
-            return "[bold]🍽  This week[/bold]\n\nNo meals this week"
+            return "[bold]🏠  Meny[/bold]\n\nIngen meny denna vecka"
 
         today_idx = self._now_provider().weekday()
         ranked = sort_meals(self._meals, today_idx)[: self.max_items]
         if not ranked:
-            return "[bold]🍽  This week[/bold]\n\nNo meals this week"
+            return "[bold]🏠  Meny[/bold]\n\nIngen meny denna vecka"
 
-        lines = ["[bold]🍽  This week[/bold]", ""]
+        lines = ["[bold]🏠  Meny[/bold]", ""]
         for i, meal in enumerate(ranked):
             icon = protein_icon(meal.protein)
             label = self._meal_label(meal)
@@ -209,7 +211,7 @@ class MealPlanCard(Card):
     async def update(self) -> None:
         """Fetch meal plan data from the Shoplist feed."""
         if not self.feed_url:
-            self._error_message = "No feed URL configured"
+            self._error_message = "Ingen URL konfigurerad"
             if self._widget:
                 self._widget.update(self._format_plan())
             return
@@ -219,10 +221,10 @@ class MealPlanCard(Card):
             self._meals = parse_meals(payload)
             self._error_message = ""
         except httpx.HTTPError as e:
-            self._error_message = f"HTTP Error: {str(e)[:30]}"
+            self._error_message = f"HTTP-fel: {str(e)[:30]}"
             self.log(f"HTTP error fetching meal plan: {e}", level="error")
         except Exception as e:
-            self._error_message = f"Error: {str(e)[:30]}"
+            self._error_message = f"Fel: {str(e)[:30]}"
             self.log(f"Error fetching meal plan: {e}", level="error")
 
         if self._widget:

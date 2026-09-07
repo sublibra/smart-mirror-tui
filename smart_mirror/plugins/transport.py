@@ -36,6 +36,8 @@ class TransportCard(Card):
 
     """
 
+    HEADER = "[bold]🚆 🚍  Trafik[/bold]"
+
     def __init__(
         self,
         config: Optional[CardConfig] = None,
@@ -50,6 +52,8 @@ class TransportCard(Card):
         if config is None:
             config = CardConfig(
                 name="Transport",
+                title="Trafik",
+                show_title=False,
                 position=CardPosition.BOTTOM_CENTER,
                 update_interval=update_interval,
                 width=60,
@@ -75,7 +79,7 @@ class TransportCard(Card):
         """Compose the departures view."""
         self.log("Composing TransportCard UI...")
         self._list_widget = Static(
-            "Initializing transport card...",
+            f"{self.HEADER}\n\nStartar trafik...",
         )
         yield self._list_widget
 
@@ -83,22 +87,22 @@ class TransportCard(Card):
         """Fetch and display departures."""
         if not self.station_id or not self.api_key:
             self._set_message(
-                "Transport card not configured: set TRANSPORT_STATION_ID and TRANSPORT_API_KEY."
+                "Trafikkortet är inte konfigurerat: sätt TRANSPORT_STATION_ID och TRANSPORT_API_KEY."
             )
             return
         self.log("Updating TransportCard departures...")
         try:
             data = await self._fetch_departures()
-            self._set_message("Parsing departures...")
+            self._set_message("Tolkar avgångar...")
             self._departures = self._parse_departures(data)
             if not self._departures:
-                self._set_message("No upcoming departures in the next 60 minutes.")
+                self._set_message(f"{self.HEADER}\n\nInga avgångar de närmaste 60 minuterna.")
                 return
 
             message = self._format_departures(self._departures)
             self._set_message(message)
         except Exception as exc:  # pragma: no cover - safety net
-            self._set_message(f"Error: {exc}")
+            self._set_message(f"Fel: {exc}")
 
     async def _fetch_departures(self) -> Dict[str, Any]:
         """Call Trafiklab Realtime API departure endpoint."""
@@ -161,7 +165,7 @@ class TransportCard(Card):
 
     def _format_departures(self, departures: List[Dict[str, Any]]) -> str:
         """Build a multiline string for the departures list."""
-        lines: List[str] = []
+        lines: List[str] = [self.HEADER, ""]
         for dep in departures[: self.max_departures]:
             line = self._format_line(dep)
             lines.append(line)
@@ -185,13 +189,13 @@ class TransportCard(Card):
             now = self._now_provider().astimezone()
             delta = (expected - now).total_seconds()
             if delta < -60:
-                return "left"
+                return "avgått"
             if delta < 60:
-                return "now"
+                return "nu"
             minutes = math.ceil(delta / 60)
             clock = expected.strftime("%H:%M")
-            return f"in {minutes}m ({clock})"
-        return "n/a"
+            return f"om {minutes} min ({clock})"
+        return "–"
 
     def _format_delay(self, delay_seconds: int) -> str:
         """Return warning string when delay exceeds threshold."""
