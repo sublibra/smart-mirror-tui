@@ -60,13 +60,13 @@ class GreeterCard(Card):
         """
         hour = datetime.now().hour
         if 5 <= hour < 12:
-            return "Good morning"
+            return "God morgon"
         elif 12 <= hour < 17:
-            return "Good afternoon"
+            return "God eftermiddag"
         elif 17 <= hour < 22:
-            return "Good evening"
+            return "God kväll"
         else:
-            return "Good night"
+            return "God natt"
 
     async def update(self) -> None:
         """Update the greeting text."""

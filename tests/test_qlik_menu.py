@@ -97,5 +97,6 @@ def test_format_menu_shows_upcoming_days():
         formatted = card._format_menu(menu)
 
     assert "Måndag" in formatted
+    assert "🏢  Meny" in formatted
     assert "Local: Pannbiff med stekt lök" in formatted
     assert "Tisdag" in formatted

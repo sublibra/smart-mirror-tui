@@ -67,5 +67,30 @@ class ClockCard(Card):
             time_str = self._current_time.strftime("%H:%M:%S")
             self._digits_widget.update(time_str)
         if self._date_widget:
-            date_str = self._current_time.strftime("%A, %B %d, %Y")
+            weekdays = (
+                "måndag",
+                "tisdag",
+                "onsdag",
+                "torsdag",
+                "fredag",
+                "lördag",
+                "söndag",
+            )
+            months = (
+                "januari",
+                "februari",
+                "mars",
+                "april",
+                "maj",
+                "juni",
+                "juli",
+                "augusti",
+                "september",
+                "oktober",
+                "november",
+                "december",
+            )
+            weekday = weekdays[self._current_time.weekday()]
+            month = months[self._current_time.month - 1]
+            date_str = f"{weekday} {self._current_time.day} {month} {self._current_time.year}"
             self._date_widget.update(date_str)

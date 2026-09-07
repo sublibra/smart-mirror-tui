@@ -17,7 +17,8 @@ class CardWidget(Container):
         """
         super().__init__(**kwargs)
         self.card = card
-        self.border_title = card.name if card.config.show_title else None
+        display_title = card.config.title or card.name
+        self.border_title = display_title if card.config.show_title else None
         if card.config.show_border:
             self.border = ("solid", card.config.border_style)
         else:

@@ -29,6 +29,7 @@ class CardConfig:
 
     name: str
     position: CardPosition
+    title: str = ""  # Display title for the border; falls back to name
     enabled: bool = True
     update_interval: int = 60  # seconds
     width: int = 40

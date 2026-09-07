@@ -89,7 +89,7 @@ async def test_greeter_morning():
 
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
-        assert "morning" in greeting.lower()
+        assert "morgon" in greeting.lower()
 
 
 @pytest.mark.asyncio
@@ -104,7 +104,7 @@ async def test_greeter_afternoon():
 
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
-        assert "afternoon" in greeting.lower()
+        assert "eftermiddag" in greeting.lower()
 
 
 @pytest.mark.asyncio
@@ -119,7 +119,7 @@ async def test_greeter_evening():
 
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
-        assert "evening" in greeting.lower()
+        assert "kväll" in greeting.lower()
 
 
 @pytest.mark.asyncio
@@ -134,4 +134,4 @@ async def test_greeter_night():
 
         greeter = GreeterCard(user_name="Bob")
         greeting = greeter._get_greeting()
-        assert "night" in greeting.lower()
+        assert "natt" in greeting.lower()

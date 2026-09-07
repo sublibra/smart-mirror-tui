@@ -69,6 +69,7 @@ class CalendarCard(Card):
         if config is None:
             config = CardConfig(
                 name="Calendar",
+                title="Kalender",
                 position=CardPosition.MIDDLE_RIGHT,
                 update_interval=300,  # Update every 5 minutes
                 width=40,
@@ -80,12 +81,12 @@ class CalendarCard(Card):
         self.ical_url = ical_url
         self.max_events = max_events
         self._events: list = []
-        self._error_message = "Loading..."
+        self._error_message = "Laddar..."
         self._calendar_widget: Optional[Static] = None
 
     def compose(self) -> ComposeResult:
         """Compose the calendar display."""
-        self._calendar_widget = Static("Loading calendar...", classes="calendar-title")
+        self._calendar_widget = Static("Hämtar kalender...", classes="calendar-title")
         yield self._calendar_widget
 
     def _get_event_icon(self, summary: str) -> str:
@@ -119,23 +120,40 @@ class CalendarCard(Card):
 
         # If today, show time
         if dt.date() == now.date():
-            return f"Today {dt.strftime('%H:%M')}"
+            return f"Idag {dt.strftime('%H:%M')}"
 
-        # If tomorrow, show "Tomorrow"
+        # If tomorrow, show "Imorgon"
         elif dt.date() == (now + timedelta(days=1)).date():
-            return f"Tomorrow {dt.strftime('%H:%M')}"
+            return f"Imorgon {dt.strftime('%H:%M')}"
 
         # Otherwise show day and time
         else:
-            return dt.strftime("%a %b %d, %H:%M")
+            weekdays = ("mån", "tis", "ons", "tor", "fre", "lör", "sön")
+            months = (
+                "jan",
+                "feb",
+                "mar",
+                "apr",
+                "maj",
+                "jun",
+                "jul",
+                "aug",
+                "sep",
+                "okt",
+                "nov",
+                "dec",
+            )
+            weekday = weekdays[dt.weekday()]
+            month = months[dt.month - 1]
+            return f"{weekday} {dt.day} {month} {dt.strftime('%H:%M')}"
 
     def _format_calendar(self) -> str:
         """Format calendar events for display."""
-        if self._error_message and self._error_message != "Loading...":
-            return f"[bold red]Calendar Error[/bold red]\n{self._error_message}"
+        if self._error_message and self._error_message != "Laddar...":
+            return f"[bold red]Kalenderfel[/bold red]\n{self._error_message}"
 
         if not self._events:
-            return "[bold]📅  Calendar[/bold]\n\nNo upcoming events"
+            return "[bold]📅  Kalender[/bold]\n\nInga kommande händelser"
 
         lines = []
         # lines.append("[bold]📅  Upcoming Events[/bold]")
@@ -143,7 +161,7 @@ class CalendarCard(Card):
 
         for i, event in enumerate(self._events[: self.max_events]):
             icon = event.get("icon", "📅")
-            summary = event.get("summary", "Untitled Event")
+            summary = event.get("summary", "Namnlös händelse")
             start = event.get("start")
 
             if start:
@@ -219,7 +237,7 @@ class CalendarCard(Card):
     async def update(self) -> None:
         """Fetch calendar data from iCal URL."""
         if not self.ical_url:
-            self._error_message = "No iCal URL configured"
+            self._error_message = "Ingen kalender-URL konfigurerad"
             if self._calendar_widget:
                 self._calendar_widget.update(self._format_calendar())
             return
@@ -234,10 +252,10 @@ class CalendarCard(Card):
                 self._error_message = ""
 
         except httpx.HTTPError as e:
-            self._error_message = f"HTTP Error: {str(e)[:30]}"
+            self._error_message = f"HTTP-fel: {str(e)[:30]}"
             self.log(f"HTTP error fetching calendar: {e}", level="error")
         except Exception as e:
-            self._error_message = f"Error: {str(e)[:30]}"
+            self._error_message = f"Fel: {str(e)[:30]}"
             self.log(f"Error fetching calendar: {e}", level="error")
 
         # Update widget
