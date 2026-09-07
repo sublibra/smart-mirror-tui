@@ -1,6 +1,9 @@
-"""Weather card for displaying current weather information."""
+"""Weather card for morning, noon, and evening dressing notes."""
 
-from typing import Optional
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Callable, Optional
+from zoneinfo import ZoneInfo
 
 import httpx
 from textual.app import ComposeResult
@@ -8,19 +11,143 @@ from textual.widgets import Static
 
 from smart_mirror.plugins.base import Card, CardConfig, CardPosition
 
+MORNING_HOUR = 8
+NOON_HOUR = 12
+EVENING_HOUR = 18
+TODAY_PERIODS = (
+    ("Morning", MORNING_HOUR),
+    ("Noon", NOON_HOUR),
+    ("Evening", EVENING_HOUR),
+)
+TOMORROW_PERIODS = (
+    ("Morning", MORNING_HOUR),
+    ("Noon", NOON_HOUR),
+)
+
+WINDY_KMH = 20.0
+COLD_C = 0.0
+RAIN_MM = 0.2
+RAIN_CODES = frozenset(
+    {
+        51,
+        53,
+        55,
+        56,
+        57,
+        61,
+        63,
+        65,
+        66,
+        67,
+        80,
+        81,
+        82,
+        95,
+        96,
+        99,
+    }
+)
+
+
+@dataclass(frozen=True)
+class PeriodForecast:
+    """Weather at a single hour of the day."""
+
+    temperature: float
+    weather_code: int
+    wind_speed: float
+    precipitation: float
+
+
+def _optional_float(values: list, index: int, default: float = 0.0) -> float:
+    """Read a numeric hourly value, treating missing entries as default."""
+
+    if index >= len(values) or values[index] is None:
+        return default
+    try:
+        return float(values[index])
+    except (TypeError, ValueError):
+        return default
+
+
+def index_hourly(hourly: dict) -> dict[tuple, PeriodForecast]:
+    """Map (date, hour) to forecast values from an Open-Meteo hourly block."""
+
+    times = hourly.get("time") or []
+    temps = hourly.get("temperature_2m") or []
+    codes = hourly.get("weather_code") or []
+    winds = hourly.get("wind_speed_10m") or []
+    precips = hourly.get("precipitation") or []
+
+    slots: dict[tuple, PeriodForecast] = {}
+    for i, stamp in enumerate(times):
+        if not isinstance(stamp, str) or i >= len(temps) or i >= len(codes):
+            continue
+        try:
+            dt = datetime.fromisoformat(stamp)
+            temperature = float(temps[i])
+            weather_code = int(codes[i])
+        except (TypeError, ValueError):
+            continue
+
+        slots[(dt.date(), dt.hour)] = PeriodForecast(
+            temperature=temperature,
+            weather_code=weather_code,
+            wind_speed=_optional_float(winds, i),
+            precipitation=_optional_float(precips, i),
+        )
+    return slots
+
+
+def is_rainy(slot: PeriodForecast) -> bool:
+    """True when the period is raining, drizzling, or stormy."""
+
+    return slot.weather_code in RAIN_CODES or slot.precipitation >= RAIN_MM
+
+
+def is_windy(slot: PeriodForecast) -> bool:
+    """True when wind is strong enough to feel it outdoors."""
+
+    return slot.wind_speed >= WINDY_KMH
+
+
+def is_cold(slot: PeriodForecast) -> bool:
+    """True when temperature is below freezing."""
+
+    return slot.temperature < COLD_C
+
+
+def dressing_notes(today_slots: list[PeriodForecast]) -> list[str]:
+    """Short dressing hints from today's morning, noon, and evening."""
+
+    if not today_slots:
+        return []
+
+    rainy = any(is_rainy(slot) for slot in today_slots)
+    windy = any(is_windy(slot) for slot in today_slots)
+    cold = any(is_cold(slot) for slot in today_slots)
+
+    notes: list[str] = []
+    if rainy:
+        notes.append("☔ Bring an umbrella")
+    if rainy and windy:
+        notes.append("🧥 It is windy and rainy")
+    if cold:
+        notes.append("🧣 It's cold")
+    return notes
+
 
 class WeatherCard(Card):
-    """Weather card positioned at bottom left with icons and forecast."""
+    """Weather card positioned at middle left with period forecast."""
 
     DEFAULT_CSS = """
     #weather Static {
         text-align: left;
-        padding: 1;
-        align: center bottom;
+        padding: 0 1;
+        align: left top;
     }
 
     #weather .weather-now {
-        text-style: bold;
         color: white;
     }
     """
@@ -82,6 +209,7 @@ class WeatherCard(Card):
         self._weather_data: dict = {}
         self._error_message = "Loading..."
         self._weather_widget: Optional[Static] = None
+        self._now_provider: Callable[..., datetime] = datetime.now
 
     def compose(self) -> ComposeResult:
         """Compose the weather display."""
@@ -99,6 +227,29 @@ class WeatherCard(Card):
         """
         return self.WEATHER_ICONS.get(code, "🌡️")
 
+    def _format_period_line(self, label: str, slot: Optional[PeriodForecast]) -> str:
+        """Format one morning/noon/evening row."""
+
+        if slot is None:
+            return f"{label:<9}—"
+
+        icon = self._get_weather_icon(slot.weather_code)
+        temp = int(round(slot.temperature))
+        wind = " 💨" if is_windy(slot) else ""
+        return f"{label:<9}{icon}  {temp:>3}°{wind}"
+
+    def _local_now(self) -> datetime:
+        """Current time in the forecast's local timezone when available."""
+
+        tz_name = self._weather_data.get("timezone")
+        if isinstance(tz_name, str) and tz_name:
+            try:
+                return self._now_provider(ZoneInfo(tz_name))
+            except Exception:
+                pass
+        now = self._now_provider()
+        return now
+
     def _format_weather(self) -> str:
         """Format weather data for display."""
         if self._error_message and self._error_message != "Loading...":
@@ -107,53 +258,45 @@ class WeatherCard(Card):
         if not self._weather_data:
             return "Loading weather data..."
 
-        lines = []
+        hourly = self._weather_data.get("hourly") or {}
+        slots = index_hourly(hourly)
+        now = self._local_now()
+        today = now.date()
+        tomorrow = today + timedelta(days=1)
 
-        # Current weather
-        current = self._weather_data.get("current", {})
-        temp = current.get("temperature_2m", "N/A")
-        code = current.get("weather_code", 0)
-        wind = current.get("wind_speed_10m", "N/A")
-        humidity = current.get("relative_humidity_2m", "N/A")
+        lines: list[str] = ["[bold]Today[/bold]"]
+        today_forecasts: list[PeriodForecast] = []
+        for label, hour in TODAY_PERIODS:
+            slot = slots.get((today, hour))
+            line = self._format_period_line(label, slot)
+            if slot is not None and now.hour > hour:
+                line = f"[dim]{line}[/dim]"
+            lines.append(line)
+            if slot is not None:
+                today_forecasts.append(slot)
 
-        icon = self._get_weather_icon(code)
-        lines.append(f"[bold]{icon}  Now: {temp}°C[/bold]")
-        lines.append(f"💨 Wind: {wind} km/h")
-        lines.append(f"💧 Humidity: {humidity}%")
+        lines.append("")
+        lines.append("[bold]Tomorrow[/bold]")
+        for label, hour in TOMORROW_PERIODS:
+            slot = slots.get((tomorrow, hour))
+            lines.append(self._format_period_line(label, slot))
 
-        # 3-day forecast
-        daily = self._weather_data.get("daily", {})
-        if daily:
-            temps_max = daily.get("temperature_2m_max", [])
-            temps_min = daily.get("temperature_2m_min", [])
-            codes = daily.get("weather_code", [])
-            times = daily.get("time", [])
-
-            if len(temps_max) >= 3 and len(times) >= 3:
-                lines.append("")
-                for i in range(1, min(4, len(temps_max))):  # Next 3 days
-                    try:
-                        from datetime import datetime
-
-                        day_name = datetime.fromisoformat(times[i]).strftime("%a")
-                        icon = self._get_weather_icon(codes[i])
-                        max_temp = temps_max[i]
-                        min_temp = temps_min[i]
-                        lines.append(f"  {day_name}: {icon} {max_temp}°/{min_temp}°C")
-                    except (IndexError, ValueError):
-                        continue
+        notes = dressing_notes(today_forecasts)
+        if notes:
+            lines.append("")
+            lines.extend(notes)
 
         return "\n".join(lines)
 
     async def update(self) -> None:
-        """Fetch weather data from Open-Meteo API with forecast."""
+        """Fetch hourly weather from Open-Meteo for today and tomorrow."""
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 url = (
                     f"https://api.open-meteo.com/v1/forecast?"
                     f"latitude={self.latitude}&longitude={self.longitude}"
-                    f"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
-                    f"&daily=temperature_2m_max,temperature_2m_min,weather_code"
+                    f"&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation"
+                    f"&forecast_days=2"
                     f"&timezone=auto"
                 )
                 response = await client.get(url)
@@ -164,6 +307,5 @@ class WeatherCard(Card):
         except Exception as e:
             self._error_message = f"Error: {str(e)[:20]}"
 
-        # Update widget
         if self._weather_widget:
             self._weather_widget.update(self._format_weather())
