@@ -88,7 +88,41 @@ async def test_transport_card_update_without_delay(monkeypatch):
 
     await card.update()
 
-    assert "[WARN" not in card._last_render
+    assert "North" not in card._last_render
+    assert "inga förseningar" in card._last_render.lower()
+
+
+@pytest.mark.asyncio
+async def test_transport_card_shows_only_delayed(monkeypatch):
+    now = datetime(2024, 1, 1, 10, 0, tzinfo=timezone.utc)
+
+    def entry(line, direction, delay):
+        return {
+            "scheduled": "2024-01-01T10:05:00+00:00",
+            "realtime": "2024-01-01T10:10:00+00:00",
+            "delay": delay,
+            "canceled": False,
+            "route": {"designation": line, "direction": direction, "transport_mode": "BUS"},
+        }
+
+    payload = {
+        "departures": [
+            entry("1", "OnTime", 0),
+            entry("2", "Early", -300),
+            entry("3", "Late", 300),
+        ]
+    }
+
+    card = TransportCard(api_key="key", station_id="123", delay_threshold=120)
+    list(card.compose())
+    card._now_provider = lambda tz=None: now  # type: ignore[assignment]
+    monkeypatch.setattr(card, "_fetch_departures", AsyncMock(return_value=payload))
+
+    await card.update()
+
+    assert "Late" in card._last_render
+    assert "OnTime" not in card._last_render
+    assert "Early" not in card._last_render
 
 
 @pytest.mark.asyncio
@@ -110,5 +144,5 @@ async def test_transport_card_no_departures(monkeypatch):
 
     await card.update()
 
-    assert "inga avgångar" in card._last_render.lower()
+    assert "inga förseningar" in card._last_render.lower()
     assert "🚆 🚍" in card._last_render

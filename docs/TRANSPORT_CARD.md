@@ -1,6 +1,6 @@
 # Transport Card Configuration
 
-The Transport Card displays upcoming departures from a Swedish transport station using the **Trafiklab Realtime API**.
+The Transport Card displays **delayed** departures from a Swedish transport station using the **Trafiklab Realtime API**. Departures that are on time (delay below `TRANSPORT_DELAY_THRESHOLD`) are hidden; when nothing is delayed the card shows "Inga förseningar."
 
 ## Setup
 
@@ -52,9 +52,9 @@ TRANSPORT_MAX_DEPARTURES=6
 - `TRANSPORT_API_KEY` - Your Trafiklab API key (required)
 - `TRANSPORT_STATION_ID` - Station ID from the lookup (required)
 - `TRANSPORT_UPDATE_INTERVAL` - How often to fetch data in seconds (default: 120)
-- `TRANSPORT_DELAY_THRESHOLD` - Minimum delay in seconds to show warning (default: 120)
+- `TRANSPORT_DELAY_THRESHOLD` - Minimum delay in seconds for a departure to be shown (default: 120)
 - `TRANSPORT_TIME_WINDOW` - Unused (kept for compatibility)
-- `TRANSPORT_MAX_DEPARTURES` - How many departures to display (default: 6)
+- `TRANSPORT_MAX_DEPARTURES` - How many delayed departures to display (default: 6)
 
 ## Features
 
