@@ -95,11 +95,12 @@ class TransportCard(Card):
             data = await self._fetch_departures()
             self._set_message("Tolkar avgångar...")
             self._departures = self._parse_departures(data)
-            if not self._departures:
-                self._set_message(f"{self.HEADER}\n\nInga avgångar de närmaste 60 minuterna.")
+            delayed = [dep for dep in self._departures if self._is_delayed(dep)]
+            if not delayed:
+                self._set_message(f"{self.HEADER}\n\nInga förseningar.")
                 return
 
-            message = self._format_departures(self._departures)
+            message = self._format_departures(delayed)
             self._set_message(message)
         except Exception as exc:  # pragma: no cover - safety net
             self._set_message(f"Fel: {exc}")
@@ -162,6 +163,11 @@ class TransportCard(Card):
         """Sort by expected time, fallback to timetable, then now."""
         fallback = self._now_provider().astimezone()
         return item.get("expected") or item.get("timetable") or fallback
+
+    def _is_delayed(self, dep: Dict[str, Any]) -> bool:
+        """Return True when the departure is late by at least the threshold."""
+        delay = dep.get("delay_seconds") or 0
+        return delay > 0 and delay >= self.delay_threshold
 
     def _format_departures(self, departures: List[Dict[str, Any]]) -> str:
         """Build a multiline string for the departures list."""
